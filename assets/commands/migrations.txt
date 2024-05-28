@@ -1,0 +1,1 @@
+migrate -path migrations -database "postgres://localhost/dev-RESTAPISample?sslmode=disable&user=devUser&password=devUser"

@@ -1,0 +1,2 @@
+docker build -t dev-Sample-REST-API .
+docker run --name=go-web-app -p 80:8080 ev-Sample-REST-API

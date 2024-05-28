@@ -1,0 +1,125 @@
+basePath: /
+definitions:
+  model.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+    type: object
+  model.UserShort:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  version: "1.0"
+paths:
+  /account/activate:
+    put:
+      consumes:
+      - application/json
+      description: Activate only deactivated accounts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "422":
+          description: Unprocessable Entity
+      summary: Activate account
+      tags:
+      - Account
+  /account/active/deactivate:
+    put:
+      consumes:
+      - application/json
+      description: Only deactivate, not delete
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "401":
+          description: Unauthorized
+        "422":
+          description: Unprocessable Entity
+      summary: Deactivate account
+      tags:
+      - Account
+  /account/active/who:
+    get:
+      consumes:
+      - application/json
+      description: info about current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.User'
+        "401":
+          description: Unauthorized
+      summary: Account info
+      tags:
+      - Account
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Create new account
+      parameters:
+      - description: user information
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserShort'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.User'
+        "400":
+          description: Bad Request
+        "422":
+          description: Unprocessable Entity
+      summary: Add account/User
+      tags:
+      - User
+  /user/authorize:
+    post:
+      consumes:
+      - application/json
+      description: Authorize into account by session cookie
+      parameters:
+      - description: user information
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/model.UserShort'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Authorize into account
+      tags:
+      - User
+swagger: "2.0"
