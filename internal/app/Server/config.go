@@ -1,4 +1,4 @@
-package apiServer
+package Server
 
 // Config ...
 type Config struct {

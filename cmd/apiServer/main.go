@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Chat/internal/app/apiServer"
+	"Chat/internal/app/Server"
 	"flag"
 	"github.com/BurntSushi/toml"
 	"log"
@@ -23,13 +23,13 @@ func init() {
 func main() {
 	flag.Parse()
 
-	cfg := apiServer.NewConfig()
+	cfg := Server.NewConfig()
 
 	if _, err := toml.DecodeFile(cfgPath, cfg); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := apiServer.Start(cfg); err != nil {
+	if err := Server.Start(cfg); err != nil {
 		log.Fatal(err)
 	}
 }

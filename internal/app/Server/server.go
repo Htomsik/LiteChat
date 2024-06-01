@@ -1,11 +1,9 @@
-package apiServer
+package Server
 
 import (
-	"Chat/internal/app/store"
 	"encoding/json"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -16,19 +14,15 @@ const (
 
 // server ...
 type server struct {
-	router       *mux.Router
-	logger       *logrus.Logger
-	store        store.Store
-	sessionStore sessions.Store
+	router *mux.Router
+	logger *logrus.Logger
 }
 
 // newServer ...
-func newServer(store store.Store, sessionStore sessions.Store) *server {
+func newServer() *server {
 	srv := &server{
-		router:       mux.NewRouter(),
-		logger:       logrus.New(),
-		store:        store,
-		sessionStore: sessionStore,
+		router: mux.NewRouter().StrictSlash(true),
+		logger: logrus.New(),
 	}
 
 	srv.configureRouter()
@@ -46,10 +40,7 @@ func (srv *server) configureRouter() {
 	// Add logger middleware for all endpoints
 	srv.router.Use(srv.logRequestMiddleWare)
 
-	srv.configureOtherEndpoints()
-	srv.configureAccountEndpoint()
-	srv.configureAccountActiveEndpoints()
-	srv.configureUserEndpoint()
+	srv.configureEndpoints()
 }
 
 func (srv *server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {

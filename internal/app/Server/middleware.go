@@ -1,7 +1,6 @@
-package apiServer
+package Server
 
 import (
-	"Chat/internal/app/model"
 	"context"
 	"fmt"
 	"github.com/google/uuid"
@@ -20,54 +19,6 @@ const (
 )
 
 type ctxKey int8
-
-func (srv *server) authenticateUserMiddleWare(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-
-		// Get user session from request
-		session, err := srv.sessionStore.Get(request, sessionName)
-		if err != nil {
-			srv.error(writer, request, http.StatusInternalServerError, err)
-			return
-		}
-
-		// Get user id from session
-		userId, exist := session.Values[userIdSessionValue]
-		if !exist {
-			srv.error(writer, request, http.StatusUnauthorized, model.NotAuthenticated)
-			return
-		}
-
-		// Check user id exist
-		user, err := srv.store.User().Find(userId.(int))
-		if err != nil {
-			srv.error(writer, request, http.StatusUnauthorized, model.NotAuthenticated)
-			return
-		}
-
-		// Throw user context next
-		next.ServeHTTP(writer, request.WithContext(context.WithValue(request.Context(), ctxKeyUser, user)))
-	})
-}
-
-func (srv *server) activeUserMiddleWare(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-
-		user := request.Context().Value(ctxKeyUser)
-
-		if user == nil {
-			srv.error(writer, request, http.StatusInternalServerError, model.ContextNotFound)
-			return
-		}
-
-		if !user.(*model.User).Active {
-			srv.error(writer, request, http.StatusUnauthorized, model.NotActive)
-			return
-		}
-
-		next.ServeHTTP(writer, request)
-	})
-}
 
 func (srv *server) requestIDMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
