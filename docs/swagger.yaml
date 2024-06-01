@@ -4,7 +4,19 @@ info:
   contact: {}
   version: "1.0"
 paths:
-  /isAlive:
+  /api/chat/{id}:
+    get:
+      parameters:
+      - description: Chat id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Connecting to websocket chat
+  /api/isAlive:
     get:
       responses:
         "200":

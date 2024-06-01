@@ -6,14 +6,25 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
-// configureEndpoints endoint configurations
+// configureEndpoints endpoint configurations
 func (srv *server) configureEndpoints() {
 
-	srv.configureFunctionalEndpoint()
+	srv.configureApiEndpoint()
+	srv.configurePageEndpoint()
 }
 
-// configureFunctionalEndpoint internal functional endpoints
-func (srv *server) configureFunctionalEndpoint() {
-	srv.router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
-	srv.router.HandleFunc("/isAlive", srv.handleIsAlive())
+// configureApiEndpoint internal functional endpoints
+func (srv *server) configureApiEndpoint() {
+	apiRouter := srv.router.PathPrefix("/api").Subrouter()
+
+	apiRouter.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+	apiRouter.HandleFunc("/isAlive", srv.handleIsAlive())
+
+	apiRouter.HandleFunc("/chat/{id}", srv.handleChat())
+}
+
+// configurePageEndpoint html pages
+func (srv *server) configurePageEndpoint() {
+
+	srv.router.HandleFunc("/chat/{id}", srv.handleHomePage())
 }
