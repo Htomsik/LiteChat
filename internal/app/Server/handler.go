@@ -11,6 +11,7 @@ func (srv *server) configureEndpoints() {
 
 	srv.configureApiEndpoint()
 	srv.configurePageEndpoint()
+	srv.configureChatRouter()
 }
 
 // configureApiEndpoint internal functional endpoints
@@ -20,7 +21,14 @@ func (srv *server) configureApiEndpoint() {
 	apiRouter.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 	apiRouter.HandleFunc("/isAlive", srv.handleIsAlive())
 
-	apiRouter.HandleFunc("/chat/{id}", srv.handleChat())
+}
+
+func (srv *server) configureChatRouter() {
+	chatRouter := srv.router.PathPrefix("/api/chat").Subrouter()
+
+	chatRouter.Use(srv.chatUserMiddleWare)
+
+	chatRouter.HandleFunc("/{id}", srv.handleChat())
 }
 
 // configurePageEndpoint html pages

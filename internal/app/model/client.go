@@ -1,4 +1,4 @@
-package Hub
+package model
 
 import (
 	"github.com/gorilla/websocket"
@@ -7,10 +7,11 @@ import (
 
 // Client middleware around hub and websocket
 type Client struct {
+	User        *ChatUser
 	hub         *Hub
 	connection  *websocket.Conn
 	logger      *logrus.Logger
-	sendMessage chan []byte
+	sendMessage chan ChatMessage
 }
 
 // RegisterToHub register clint to hub
@@ -19,13 +20,14 @@ func (client *Client) RegisterToHub() {
 }
 
 // NewClient create new client
-func NewClient(hub *Hub, connection *websocket.Conn) *Client {
+func NewClient(hub *Hub, connection *websocket.Conn, user *ChatUser) *Client {
 
 	return &Client{
+		User:        user,
 		hub:         hub,
 		connection:  connection,
 		logger:      hub.logger,
-		sendMessage: make(chan []byte, 256),
+		sendMessage: make(chan ChatMessage),
 	}
 }
 
@@ -45,7 +47,15 @@ func (client *Client) WriteToHub() {
 			}
 			break
 		}
-		client.hub.msgRetranslator <- message
+
+		stringMessage := string(message[:])
+
+		jsonMessage := ChatMessage{
+			User:    client.User.Name,
+			Message: stringMessage,
+		}
+
+		client.hub.msgRetranslator <- jsonMessage
 	}
 
 }
@@ -65,20 +75,20 @@ func (client *Client) ReadFromHub() {
 	for {
 		select {
 		// listening client hub messages
-		case message, ok := <-client.sendMessage:
+		case chatMessage, ok := <-client.sendMessage:
 			// Check hub closed
 			if !ok {
 				client.connection.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
 
-			// get next author and send message from him
+			// get next author and send chatMessage from him
 			writer, err := client.connection.NextWriter(websocket.TextMessage)
 			if err != nil {
 				client.logger.Infof("Error when get next writer %v", err)
 				return
 			} else {
-				writer.Write(message)
+				writer.Write(chatMessage.ToByteArray())
 			}
 
 			if err := writer.Close(); err != nil {

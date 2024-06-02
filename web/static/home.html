@@ -5,8 +5,14 @@
 <script type="text/javascript">
 window.onload = function () {
     var conn;
-    var msg = document.getElementById("msg");
-    var log = document.getElementById("log");
+
+    var userName    = document.getElementById("UserName")
+    var msg         = document.getElementById("msg");
+    var log         = document.getElementById("log");
+
+    var sendMessageForm = document.getElementById("SendMessageForm")
+    var openConnectionForm = document.getElementById("OpenConnectionForm")
+
 
     function appendLog(item) {
         var doScroll = log.scrollTop > log.scrollHeight - log.clientHeight - 1;
@@ -16,7 +22,7 @@ window.onload = function () {
         }
     }
 
-    document.getElementById("form").onsubmit = function () {
+    sendMessageForm.onsubmit = function () {
         if (!conn) {
             return false;
         }
@@ -28,31 +34,57 @@ window.onload = function () {
         return false;
     };
 
-    if (window["WebSocket"]) {
+    openConnectionForm.onsubmit = function () {
 
+        if (!userName.value) {
+            return false;
+        }
 
-        conn = new WebSocket("ws://" + document.location.host + "/api/chat/" + document.URL.split('/').pop());
+        openConnectionForm.style.visibility = "hidden"
 
-        conn.onclose = function (evt) {
-            var item = document.createElement("div");
-            item.innerHTML = "<b>Connection closed.</b>";
-            appendLog(item);
-        };
+        if (window["WebSocket"]) {
 
-        conn.onmessage = function (evt) {
-            var messages = evt.data.split('\n');
-            for (var i = 0; i < messages.length; i++) {
-                var item = document.createElement("div");
-                item.innerText = messages[i];
+            let url = "ws://" + document.location.host + "/api/chat/" + document.URL.split('/').pop();
+            url += "?User=" + userName.value
+
+            conn = new WebSocket(url);
+
+            conn.onclose = function (evt) {
+                let item = document.createElement("div");
+                item.innerHTML = "<b>Connection closed</b>";
                 appendLog(item);
-            }
-        };
+            };
 
-    } else {
-        var item = document.createElement("div");
-        item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
-        appendLog(item);
-    }
+            conn.onmessage = function (evt) {
+
+                let messageObj = JSON.parse(evt.data)
+                let messageAr = messageObj.message.split("/n")
+
+                for (let i = 0; i < messageAr.length; i++) {
+                    let item = document.createElement("div");
+                    item.innerText = messageObj.user + ": " + messageAr[i]
+                    appendLog(item);
+                }
+            };
+
+            conn.onopen = function (evt) {
+                let item = document.createElement("div");
+                item.innerHTML = "<b>Connection open</b>";
+                appendLog(item);
+            };
+
+        } else {
+            var item = document.createElement("div");
+            item.innerHTML = "<b>Your browser does not support WebSockets.</b>";
+            appendLog(item);
+        }
+
+        return false;
+    };
+
+
+
+
 };
 </script>
 <style type="text/css">
@@ -81,7 +113,7 @@ body {
     overflow: auto;
 }
 
-#form {
+form {
     padding: 0 0.5em 0 0.5em;
     margin: 0;
     position: absolute;
@@ -95,9 +127,18 @@ body {
 </head>
 <body>
 <div id="log"></div>
-<form id="form">
+
+
+
+<form id="SendMessageForm">
     <input type="submit" value="Send" />
     <input type="text" id="msg" size="64" autofocus />
 </form>
+
+<form id="OpenConnectionForm">
+    <input type="submit" value="Open" />
+    <input type="text" id="UserName" size="64" autofocus />
+</form>
+
 </body>
 </html>
