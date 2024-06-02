@@ -1,8 +1,5 @@
 port = ":8080"
 logLevel = "debug"
 
-databaseType = "sqlite3"
-databaseURL = "assets/db/dev-store.db"
-databaseAutoMigration = true
 
 sessionKey = "TESTKEY_64A1CD5D1CAE3D963198A5B6DEBBF3EFA7889BFCE719655BAF38415D19"
