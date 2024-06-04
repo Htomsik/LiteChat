@@ -2,6 +2,7 @@ package Server
 
 import (
 	_ "Chat/docs"
+	"Chat/internal/app/model"
 	_ "github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -10,8 +11,8 @@ import (
 func (srv *server) configureEndpoints() {
 
 	srv.configureApiEndpoint()
-	srv.configurePageEndpoint()
 	srv.configureChatRouter()
+	srv.configurePageEndpoint()
 }
 
 // configureApiEndpoint internal functional endpoints
@@ -34,5 +35,10 @@ func (srv *server) configureChatRouter() {
 // configurePageEndpoint html pages
 func (srv *server) configurePageEndpoint() {
 
-	srv.router.HandleFunc("/chat/{id}", srv.handleHomePage())
+	websiteHandler := model.SpaHandler{
+		StaticPath: "website",
+		IndexPath:  "index.html",
+	}
+
+	srv.router.PathPrefix("/").Handler(websiteHandler)
 }

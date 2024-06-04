@@ -2,6 +2,7 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -26,10 +27,44 @@ func (srv *server) handleIsAlive() http.HandlerFunc {
 	}
 }
 
-// handleHomePage домашняя страницы
-func (srv *server) handleHomePage() http.HandlerFunc {
+// handleCanConnect Checking can connect to server
+// @Summary      Checking can connect to server
+// @Success      200
+// @Router       /api/canConnect [get]
+func (srv *server) handleCanConnect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./web/static/home.html")
+
+		// Check chat id
+		pathVars := mux.Vars(r)
+		hubId, ok := pathVars["id"]
+
+		if !ok {
+			srv.respond(w, r, http.StatusBadRequest, nil)
+			return
+		}
+
+		// Check userQuery
+		userQuery := r.URL.Query().Get(model.QueryValueUser)
+		if userQuery == "" {
+			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(model.QueryVariableNotFound, model.QueryValueUser)))
+			return
+		}
+
+		// if chat doesn't exists
+		hub, ok := hubs[hubId]
+		if !ok {
+			srv.respond(w, r, http.StatusOK, nil)
+			return
+		}
+
+		// Check is user with same name is connected
+		user := r.Context().Value(contextUser).(*model.ChatUser)
+		if hub.FindClient(user.Name) != nil {
+			srv.respond(w, r, http.StatusUnprocessableEntity, fmt.Sprintf(model.AlreadyExists, user.Name))
+			return
+		}
+
+		srv.respond(w, r, http.StatusOK, nil)
 	}
 }
 

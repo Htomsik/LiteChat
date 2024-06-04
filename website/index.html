@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="style.css">
+
+    <title>Demo</title>
+</head>
+<body >
+
+<div   id="app">
+    <!--    Connection window   -->
+    <div v-if="!connected" class="centerScreen" >
+        <div class="card text-center">
+
+            <h1 style="font-weight: bold;">ChatHub</h1>
+
+            <form id="ConnectInfo" class="needs-validation">
+                <!--    Data group  -->
+                <div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" v-model="serverId"   placeholder="" required>
+                        <label>Server</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" v-model="userName"  placeholder="" required>
+                        <label>Username</label>
+                    </div>
+                </div>
+
+                <!--    Button group    -->
+                <div>
+                    <button :disabled="canConnect" type="button" v-on:click="connect" class="btn btn-primary">Connect</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--    Chat    -->
+    <div  v-if="connected" class="centerScreen" >
+        <div style="height: 95%;"  class="container">
+
+            <!--    Messages    -->
+            <div style="height: 90%;"  class="overflow-auto" >
+
+                <div v-for="item in messages" class="message bg-secondary">
+                    <span class="message-user">{{item.user}}</span>
+                    <div class="message-text">
+                        {{item.message}}
+                    </div>
+                </div>
+            </div>
+
+            <!--    Send message    -->
+            <div style="margin: 15px 0 0 0"  class="no-wrap container text-center">
+
+                <div class="row align-items-center no-wrap">
+
+                    <div class="col" >
+                        <button  type="button"  v-on:click="disconnect" class="btn btn-primary">Disconnect</button>
+                    </div>
+
+                    <div class="col-lg-8">
+                        <textarea v-model="currentMessage" class="form-control" ></textarea>
+                    </div>
+
+                    <div class="col">
+                        <button :disabled="canSendMessage" v-on:click="sendMessage" type="button" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--Vue-->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+
+<!--Axios-->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            // UserConnectInfo
+            userName : "",
+            serverId : "",
+
+            // Connection info
+            connected: false,
+            wsConnection: null,
+
+            // Messages from users
+            messages : [
+            ],
+
+            // Message info
+            currentMessage: "",
+
+        },
+        methods: {
+            // Init validation
+            changeValidation : function (enable = true){
+
+                let removeClass = enable ? 'needs-validation' : 'was-validated'
+                let setClass = enable ? 'was-validated' : 'needs-validation'
+
+                let  forms = document.getElementById("ConnectInfo")
+
+                forms.classList.remove(removeClass)
+                forms.classList.add(setClass)
+            },
+
+
+            // Send chat message
+            sendMessage: function (){
+                if (!this.connected) {
+                    return
+                }
+
+                this.wsConnection.send(this.currentMessage)
+            },
+
+            // Close connection
+            disconnect : function () {
+                if (this.wsConnection) {
+                    this.wsConnection.close()
+                }
+            },
+
+            // Connect to websocket chat
+            connect: function (){
+
+                if (this.wsConnection != null)
+                    this.wsConnection.close()
+
+                let url = new URL("ws://" + document.location.host + "/api/chat/" + this.serverId);
+                url.searchParams.append('User', this.userName);
+
+                this.wsConnection = new WebSocket(url);
+
+                this.wsConnection.onopen = function (evt){
+                    app.connected = true
+                }
+
+                this.wsConnection.onclose = function (evt){
+                    app.connected = false
+                }
+
+                this.wsConnection.onmessage = function (evt) {
+                    let messageObj = JSON.parse(evt.data)
+                    app.messages.push(messageObj)
+                };
+            },
+
+            closeConnection: function (){
+
+            }
+        },
+        computed: {
+            canConnect: function(){
+                return this.userName.trim().length === 0 || this.serverId.trim().length === 0;
+            },
+
+            canSendMessage: function(){
+                return this.currentMessage.trim().length === 0;
+            },
+        },
+        watch:{
+
+            userName:{
+                handler(newValue, oldValue){
+                    this.changeValidation()
+                },
+                once: true
+            },
+
+            serverId:{
+                handler(newValue, oldValue){
+                    this.changeValidation()
+                },
+                once: true
+            }
+
+        },
+        created() {
+
+        }
+
+    })
+</script>
+</body>
+</html>

@@ -2,10 +2,22 @@ package model
 
 import "encoding/json"
 
+const (
+	SystemUser = "System"
+)
+
 // ChatMessage message from chat
 type ChatMessage struct {
 	User    string `json:"user"`
 	Message string `json:"message"`
+}
+
+// NewSystemMessage message from chat
+func NewSystemMessage(text string) ChatMessage {
+	return ChatMessage{
+		User:    SystemUser,
+		Message: text,
+	}
 }
 
 // ToJson converting message to json
