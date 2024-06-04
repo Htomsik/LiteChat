@@ -15,7 +15,8 @@
 </head>
 <body >
 
-<div   id="app">
+<div id="app" >
+
     <!--    Connection window   -->
     <div v-if="!connected" class="centerScreen" >
         <div class="card text-center">
@@ -50,12 +51,15 @@
 
             <!--    Messages    -->
             <div style="height: 90%;"  class="overflow-auto" >
+                <div v-for="item in messages" :class="{ messageBoxLeft: item.user === userName}" class="test">
 
-                <div v-for="item in messages" class="message bg-secondary">
-                    <span class="message-user">{{item.user}}</span>
-                    <div class="message-text">
-                        {{item.message}}
+                    <div class="message bg-secondary">
+                        <span class="message-user">{{item.user}}</span>
+                        <div class="message-text">
+                            {{item.message}}
+                        </div>
                     </div>
+
                 </div>
             </div>
 
@@ -79,7 +83,14 @@
             </div>
         </div>
     </div>
+
 </div>
+
+
+
+
+
+
 
 
 
@@ -92,25 +103,26 @@
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
-
     var app = new Vue({
-        el: '#app',
-        data: {
+        el: "#app",
+        data:{
+            // Connection info
+            connected: false,
+
             // UserConnectInfo
             userName : "",
             serverId : "",
 
-            // Connection info
-            connected: false,
             wsConnection: null,
 
             // Messages from users
             messages : [
+                // {user:"System", message:"callBack"},
+                // {user:"jake", message:"callBack"},
             ],
 
-            // Message info
+            // Current Message info
             currentMessage: "",
-
         },
         methods: {
             // Init validation
@@ -124,8 +136,6 @@
                 forms.classList.remove(removeClass)
                 forms.classList.add(setClass)
             },
-
-
             // Send chat message
             sendMessage: function (){
                 if (!this.connected) {
@@ -165,23 +175,14 @@
                     let messageObj = JSON.parse(evt.data)
                     app.messages.push(messageObj)
                 };
-            },
-
-            closeConnection: function (){
-
             }
         },
         computed: {
             canConnect: function(){
                 return this.userName.trim().length === 0 || this.serverId.trim().length === 0;
-            },
-
-            canSendMessage: function(){
-                return this.currentMessage.trim().length === 0;
-            },
+            }
         },
         watch:{
-
             userName:{
                 handler(newValue, oldValue){
                     this.changeValidation()
@@ -195,12 +196,7 @@
                 },
                 once: true
             }
-
-        },
-        created() {
-
         }
-
     })
 </script>
 </body>
