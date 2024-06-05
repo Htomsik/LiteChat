@@ -2,7 +2,6 @@ package Server
 
 import (
 	"Chat/internal/app/model"
-	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -30,7 +29,7 @@ func (srv *server) handleIsAlive() http.HandlerFunc {
 // handleCanConnect Checking can connect to server
 // @Summary      Checking can connect to server
 // @Success      200
-// @Router       /api/canConnect [get]
+// @Router       /api/canConnect/{id} [get]
 func (srv *server) handleCanConnect() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -40,13 +39,6 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 
 		if !ok {
 			srv.respond(w, r, http.StatusBadRequest, nil)
-			return
-		}
-
-		// Check userQuery
-		userQuery := r.URL.Query().Get(model.QueryValueUser)
-		if userQuery == "" {
-			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(model.QueryVariableNotFound, model.QueryValueUser)))
 			return
 		}
 

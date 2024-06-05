@@ -30,6 +30,7 @@ func (srv *server) configureChatRouter() {
 	chatRouter.Use(srv.chatUserMiddleWare)
 
 	chatRouter.HandleFunc("/{id}", srv.handleChat())
+	chatRouter.HandleFunc("/canConnect/{id}", srv.handleCanConnect())
 }
 
 // configurePageEndpoint html pages
