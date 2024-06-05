@@ -33,12 +33,16 @@ func (srv *server) chatUserMiddleWare(next http.Handler) http.Handler {
 
 		// Check is userName valid
 		userName := strings.TrimSpace(userQuery)
+		if len(userName) < 2 || len(userName) > 20 {
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v user must be in the range of 2 to 20 characters", model.QueryValueUser)))
+			return
+		}
 
-		var re = regexp.MustCompile(`[a-zA-Z][a-zA-Z0-9-_\.]{2,20}$`)
+		var re = regexp.MustCompile(`[a-zA-Z0-9]`)
 		userNameMatch := re.ReplaceAllString(userName, "")
 
-		if userNameMatch != "" || userName == "" {
-			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(model.IncorrectData, model.QueryValueUser)))
+		if userNameMatch != "" {
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v must be only from numbers and latin symbols", model.QueryValueUser)))
 			return
 		}
 

@@ -15,6 +15,16 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/canConnect/{id}": {
+            "get": {
+                "summary": "Checking can connect to server",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/chat/{id}": {
             "get": {
                 "summary": "Connecting to websocket chat",
