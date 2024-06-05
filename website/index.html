@@ -13,37 +13,47 @@
 
     <title>Demo</title>
 </head>
-<body >
+<body>
 
-<div id="app" >
+<div id="app" class="centerContainer" style="height: 100%; width: 100%">
 
     <!--    Connection window   -->
-    <div v-if="!connected" class="centerScreen" >
-        <div class="card text-center">
+    <div  v-if="!connected" class="colContainer">
 
-            <h1 style="font-weight: bold;">ChatHub</h1>
+        <!--    Upper data-->
+        <div class="centerContainer marginAll">
+            <div class="card text-center">
+                <h1 style="font-weight: bold;">ChatHub</h1>
+                <form id="ConnectInfo" class="needs-validation">
+                    <!--    Data group  -->
+                    <div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" v-model="serverId"   placeholder="" required>
+                            <label>Server</label>
+                        </div>
 
-            <form id="ConnectInfo" class="needs-validation">
-                <!--    Data group  -->
-                <div>
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" v-model="serverId"   placeholder="" required>
-                        <label>Server</label>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" v-model="userName"  placeholder="" required>
+                            <label>Username</label>
+                        </div>
                     </div>
-
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" v-model="userName"  placeholder="" required>
-                        <label>Username</label>
+                    <!--    Button group    -->
+                    <div>
+                        <button :disabled="canConnect" type="button" v-on:click="tryConnect" class="btn btn-primary">Connect</button>
                     </div>
-                </div>
+                </form>
+            </div>
 
-                <!--    Button group    -->
-                <div>
-                    <button :disabled="canConnect" type="button" v-on:click="connect" class="btn btn-primary">Connect</button>
-                </div>
-            </form>
         </div>
+
+        <div v-if="showErrorAlert" id="#alert" class="marginAll alert alert-danger alert-dismissible fade show" role="alert">
+            <strong> {{errorAlert}} </strong>
+            <button type="button" v-on:click="closeAlert" class="btn-close"  aria-label="Close"></button>
+        </div>
+
     </div>
+
+
 
     <!--    Chat    -->
     <div  v-if="connected" class="centerScreen" >
@@ -88,13 +98,6 @@
 
 
 
-
-
-
-
-
-
-
 <!--Vue-->
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
@@ -108,12 +111,18 @@
         data:{
             // Connection info
             connected: false,
+            wsConnection: null,
+
+            // Alerts
+            errorAlert : "",
+            showErrorAlert: false,
 
             // UserConnectInfo
             userName : "",
             serverId : "",
 
-            wsConnection: null,
+            // API info
+            apiURL: document.location.host + "/api/",
 
             // Messages from users
             messages : [
@@ -125,6 +134,31 @@
             currentMessage: "",
         },
         methods: {
+            openAlert: function (message) {
+                this.showErrorAlert = true
+                this.errorAlert = message;
+            },
+
+            closeAlert: function (message) {
+                this.showErrorAlert = false
+                this.errorAlert = "";
+            },
+
+            tryConnect: function() {
+                let url = new URL(this.apiURL + "/chat/canConnect" + this.serverId);
+                url.searchParams.append('User', this.userName);
+
+                // axios.post(url.toString())
+                //     .then(function (response) {
+                //         console.log(response.data);
+                //     })
+                //     .catch(function (error) {
+                //
+                //     })
+                //     .finally(function () {
+                //     });
+            },
+
             // Init validation
             changeValidation : function (enable = true){
 
@@ -144,21 +178,19 @@
 
                 this.wsConnection.send(this.currentMessage)
             },
-
             // Close connection
             disconnect : function () {
                 if (this.wsConnection) {
                     this.wsConnection.close()
                 }
             },
-
             // Connect to websocket chat
             connect: function (){
 
                 if (this.wsConnection != null)
                     this.wsConnection.close()
 
-                let url = new URL("ws://" + document.location.host + "/api/chat/" + this.serverId);
+                let url = new URL("ws://" + this.apiURL + "/chat/" + this.serverId);
                 url.searchParams.append('User', this.userName);
 
                 this.wsConnection = new WebSocket(url);
