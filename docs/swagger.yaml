@@ -1,0 +1,31 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  version: "1.0"
+paths:
+  /api/canConnect/{id}:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Checking can connect to server
+  /api/chat/{id}:
+    get:
+      parameters:
+      - description: Chat id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Connecting to websocket chat
+  /api/isAlive:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: checking server is alive
+swagger: "2.0"
