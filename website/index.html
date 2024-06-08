@@ -20,7 +20,6 @@
 <body>
 
 <div id="app" style="height: 100%; width: 100%">
-
     <div v-if="showErrorAlert" id="#alert" class="marginAll alert alert-danger alert-dismissible fade show"
          role="alert">
         <strong> {{ errorAlert }} </strong>
@@ -41,7 +40,7 @@
                         <!--    Data group  -->
                         <div>
                             <div class="form-floating mb-3">
-                                <input id="serverInput" type="text" class="form-control" v-model="serverId"
+                                <input maxlength="128" minlength="1" id="serverInput" type="text" class="form-control" v-model="serverId"
                                        placeholder="" required>
                                 <label for="serverInput">Server</label>
                             </div>
@@ -73,13 +72,21 @@
 
         <!--    Chat info   -->
         <div class="card chatContainer" style="width: 200px">
-            <div class="colContainer">
 
-                <div class="centerContainer">
-                    <H1>{{ serverId }}</H1>
-                </div>
-
+            <!--    Chat name   -->
+            <div class="colContainer" style="flex-shrink: 0;text-align: center">
+                {{serverId}}
                 <div style="border: 1px solid #6c757d; border-radius: 5px"></div>
+            </div>
+
+            <!--    Users   -->
+            <div class="colContainer" style=" flex-grow: 1">
+
+            </div>
+
+            <!--    Additional button -->
+            <div class="rowContainer"  style="flex-shrink: 0">
+                <button v-on:click="disconnect" id="disconnectButton" style="width: 100%" class="btn btn-secondary" type="button">Disconnect</button>
             </div>
 
         </div>
@@ -103,15 +110,15 @@
                     </div>
                 </div>
 
-
                 <div class=" rowContainer centerContainer">
                     <textarea maxlength="256" v-model="currentMessage" class="marginAll"
-                              style="flex-grow: 1; max-height: 60px; min-height: 60px"></textarea>
+                              style="flex-grow: 1; max-height: 35px; min-height: 35px"></textarea>
                     <button :disabled="blockSendMessage" v-on:click="sendMessage" type="button"
                             class="btn btn-secondary">
                         <i class="bi bi-send-fill"></i>
                     </button>
                 </div>
+
             </div>
         </div>
 
@@ -134,7 +141,7 @@
         el: "#app",
         data: {
             // Connection info
-            connected: false,
+            connected: true,
             wsConnection: null,
 
             // Alerts
@@ -142,12 +149,13 @@
             showErrorAlert: false,
 
             // UserConnectInfo
-            userName: "",
+            userName: "Jake",
             serverId: "",
 
             // Messages from users
             messages: [
-                // {user:"System", message:"callBack"},
+                {user:"System", message:"callBack"},
+                {user:"Jake", message:"callBack"},
             ],
 
             // Current Message info
@@ -258,6 +266,7 @@
 
                 this.wsConnection.onclose = function (evt) {
                     app.connected = false
+                    app.messages = []
                 }
 
                 this.wsConnection.onmessage = function (evt) {
