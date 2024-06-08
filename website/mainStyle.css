@@ -7,6 +7,7 @@ body,html{
 }
 
 
+/*Messages*/
 .messageBoxLeft{
     display:flex;
     justify-content:flex-end;
@@ -33,13 +34,20 @@ body,html{
     font-size: 16px;
 }
 
+.chatContainer{
+    height: 90%;
+    padding: 10px;
+}
+
+/*General*/
 
 .card{
+    margin: 5px;
     padding: 20px;
     border-radius: 20px;
 }
 
-/*all elements in center*/
+/*all elements centered*/
 .centerContainer {
     display: flex;
     justify-content: center;
@@ -48,21 +56,29 @@ body,html{
 
 /*all elements vertical*/
 .colContainer {
+    padding: 5px;
     display: flex;
     flex-direction: column;
 }
 
-.marginAll{
-    margin: 10px;
+/*all elements horizontal*/
+.rowContainer{
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
 }
 
-.alert{
-    position: absolute;
-    bottom: 0;
-    right: 0;
+.marginAll{
+    margin: 5px;
+}
+
+.full{
+    width: 100%;
+    height: 100%;
 }
 
 
 /**{*/
 /*    outline: 2px solid lightgreen; !important;*/
 /*}*/
+
