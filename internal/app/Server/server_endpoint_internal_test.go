@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+// TODO realize canConnect tests with ws connection
+
 // TestServer_SimpleEndpoint checking simple endpoints
 func TestServer_SimpleEndpoint(t *testing.T) {
 	// Arrange
@@ -18,26 +20,30 @@ func TestServer_SimpleEndpoint(t *testing.T) {
 		name         string
 		body         interface{}
 		expectedCode int
+		httpMethod   string
 		url          string
 	}{
 		{
 			name:         "valid",
 			body:         nil,
 			expectedCode: http.StatusOK,
-			url:          "/isAlive",
+			httpMethod:   http.MethodGet,
+			url:          "/api/isAlive",
 		},
 	}
 
 	// Act
 	for _, testCase := range cases {
 		t.Run(testCase.name, func(t *testing.T) {
-			recorder := httptest.NewRecorder()
 
+			recorder := httptest.NewRecorder()
 			bodyBytes := &bytes.Buffer{}
 
-			json.NewEncoder(bodyBytes).Encode(testCase.body)
+			if testCase.body != nil {
+				json.NewEncoder(bodyBytes).Encode(testCase.body)
+			}
 
-			request, _ := http.NewRequest(http.MethodPost, testCase.url, bodyBytes)
+			request, _ := http.NewRequest(testCase.httpMethod, testCase.url, bodyBytes)
 
 			srv.ServeHTTP(recorder, request)
 

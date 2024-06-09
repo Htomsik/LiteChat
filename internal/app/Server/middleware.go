@@ -1,24 +1,57 @@
 package Server
 
 import (
+	"Chat/internal/app/model"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"regexp"
+	"strings"
 	"time"
 )
 
 const (
-	ctxKeyUser ctxKey = iota
-	ctxRequestId
-)
-
-const (
-	requestIdHeader = "Request-ID"
+	contextUser ctxKey = iota
+	contextRequestId
 )
 
 type ctxKey int8
+
+// chatUserMiddleWare throw userInfo from session to context
+func (srv *server) chatUserMiddleWare(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		// Check is userNameMatch header exists
+		userQuery := r.URL.Query().Get(model.QueryValueUser)
+		if userQuery == "" {
+			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(model.QueryVariableNotFound, model.QueryValueUser)))
+			return
+		}
+
+		// Check is userName valid
+		userName := strings.TrimSpace(userQuery)
+		if len(userName) < 2 || len(userName) > 20 {
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v user must be in the range of 2 to 20 characters", model.QueryValueUser)))
+			return
+		}
+
+		var re = regexp.MustCompile(`[a-zA-Z0-9]`)
+		userNameMatch := re.ReplaceAllString(userName, "")
+
+		if userNameMatch != "" {
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v must be only from numbers and latin symbols", model.QueryValueUser)))
+			return
+		}
+
+		chatUser := model.NewChatUser(userName)
+
+		// Throw userNameMatch context next
+		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextUser, chatUser)))
+	})
+}
 
 func (srv *server) requestIDMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
@@ -26,10 +59,10 @@ func (srv *server) requestIDMiddleWare(next http.Handler) http.Handler {
 		guid := uuid.New().String()
 
 		// Set guid to header
-		writer.Header().Set(requestIdHeader, guid)
+		writer.Header().Set(model.RequestIdHeader, guid)
 
 		// Throw request id next
-		next.ServeHTTP(writer, request.WithContext(context.WithValue(request.Context(), ctxRequestId, guid)))
+		next.ServeHTTP(writer, request.WithContext(context.WithValue(request.Context(), contextRequestId, guid)))
 	})
 }
 
@@ -38,7 +71,7 @@ func (srv *server) logRequestMiddleWare(next http.Handler) http.Handler {
 		// Create local logger rules
 		logger := srv.logger.WithFields(logrus.Fields{
 			"remove_addr": request.RemoteAddr, // request address
-			"request_id":  request.Context().Value(ctxRequestId),
+			"request_id":  request.Context().Value(contextRequestId),
 		})
 
 		requestInfo := fmt.Sprintf("%s %s", request.Method, request.RequestURI)

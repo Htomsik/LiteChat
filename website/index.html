@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="mainStyle.css">
+
+    <title>Demo</title>
+</head>
+<body>
+
+<div id="app"  style="height: 100%; width: 100%">
+
+    <div  v-if="showErrorAlert" id="#alert" class="marginAll alert alert-danger alert-dismissible fade show" role="alert">
+        <strong> {{errorAlert}} </strong>
+        <button type="button" v-on:click="closeAlert" class="btn-close"  aria-label="Close"></button>
+    </div>
+
+    <div style="height: 100%; width: 100%" class="centerContainer">
+        <!--    Connection window   -->
+        <div  v-if="!connected" class="colContainer">
+
+            <!--    Upper data-->
+            <div class="centerContainer marginAll">
+                <div class="card text-center">
+                    <h1 style="font-weight: bold;">ChatHub</h1>
+                    <form id="ConnectInfo" class="needs-validation">
+
+                        <!--    Data group  -->
+                        <div>
+                            <div class="form-floating mb-3">
+                                <input id="serverInput" type="text" class="form-control" v-model="serverId"   placeholder="" required>
+                                <label for="serverInput">Server</label>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input id="userNameInput" type="text" class="form-control" v-model="userName"  maxlength="20" minlength="2" placeholder="" required>
+                                <label for="userNameInput">Username</label>
+                            </div>
+                        </div>
+
+                        <!--    Button group    -->
+                        <div>
+                            <button :disabled="blockConnection" type="button" v-on:click="tryConnect" class="btn btn-primary">Connect</button>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!--    Chat    -->
+        <div  v-if="connected" class="centerScreen" >
+            <div style="height: 95%;"  class="container">
+
+                <!--    Messages    -->
+                <div style="height: 90%;"  class="overflow-auto" >
+                    <div v-for="item in messages" :class="{ messageBoxLeft: item.user === userName}" class="test">
+
+                        <div class="message bg-secondary">
+                            <span class="message-user">{{item.user}}</span>
+                            <div class="message-text">
+                                {{item.message}}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!--    Send message    -->
+                <div style="margin: 15px 0 0 0"  class="no-wrap container text-center">
+
+                    <div class="row align-items-center no-wrap">
+
+                        <div class="col" >
+                            <button  type="button"  v-on:click="disconnect" class="btn btn-primary">Disconnect</button>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <textarea v-model="currentMessage" class="form-control" ></textarea>
+                        </div>
+
+                        <div class="col">
+                            <button :disabled="blockSendMessage" v-on:click="sendMessage" type="button" class="btn btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+
+
+
+<!--Vue-->
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+
+<!--Axios-->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    const UnprocessableEntity = 422
+
+    var app = new Vue({
+        el: "#app",
+        data:{
+            // Connection info
+            connected: false,
+            wsConnection: null,
+
+            // Alerts
+            errorAlert : "",
+            showErrorAlert: false,
+
+            // UserConnectInfo
+            userName : "",
+            serverId : "",
+
+            // Messages from users
+            messages : [
+                // {user:"System", message:"callBack"},
+                // {user:"jake", message:"callBack"},
+            ],
+
+            // Current Message info
+            currentMessage: "",
+        },
+
+        methods: {
+            handleAxiosErrors: function (error){
+                if (error.response) {
+                    if (error.response.status === UnprocessableEntity)
+                    {
+                        app.openAlert(error.response.data.error)
+                    }
+
+                    app.openAlert("Connection to server failed")
+                } else {
+                    console.log('Error', error.message);
+                }
+            },
+
+            openAlert: function (message) {
+                this.showErrorAlert = true
+                this.errorAlert = message;
+            },
+
+            closeAlert: function (message) {
+                this.showErrorAlert = false
+                this.errorAlert = "";
+            },
+
+            // Check API is alive
+            checkApiIsAlive: async function(){
+                let ret
+                let url = `/api/isAlive`
+
+                await  axios
+                    .get(url)
+                    .then(response => {
+                        ret = response.status === 200
+                    })
+                    .catch(function (error) {
+                        app.handleAxiosErrors(error)
+                        ret = false
+                    });
+
+                return ret
+            },
+
+            // Check can connect to chat
+            tryConnect: async function() {
+                this.closeAlert()
+
+                let url = `/api/chat/canConnect/${this.serverId}?User=${this.userName}`
+
+                if (!await this.checkApiIsAlive())
+                {
+                    app.openAlert("Connection to server failed")
+                    return;
+                }
+
+                await  axios
+                            .get(url)
+                            .then(response => {
+                                if (response.status === 200)
+                                {
+                                    app.connect()
+                                }
+                            })
+                            .catch(function (error) {
+                                app.handleAxiosErrors(error)
+                            });
+            },
+
+            // Init validation
+            changeValidation : function (enable = true){
+                let removeClass = enable ? 'needs-validation' : 'was-validated'
+                let setClass = enable ? 'was-validated' : 'needs-validation'
+
+                let  forms = document.getElementById("ConnectInfo")
+
+                forms.classList.remove(removeClass)
+                forms.classList.add(setClass)
+            },
+            // Send chat message
+            sendMessage: function (){
+                if (!this.connected) {
+                    return
+                }
+
+                this.wsConnection.send(this.currentMessage)
+            },
+            // Close connection
+            disconnect : function () {
+                if (this.wsConnection) {
+                    this.wsConnection.close()
+                }
+            },
+            // Connect to websocket chat
+            connect: function (){
+
+                if (this.wsConnection != null)
+                    this.wsConnection.close()
+
+                let url = `/api/chat/${this.serverId}?User=${this.userName}`
+
+                this.wsConnection= new WebSocket(url);
+
+                this.wsConnection.onopen = function (evt){
+                    app.connected = true
+                }
+
+                this.wsConnection.onclose = function (evt){
+                    app.connected = false
+                }
+
+                this.wsConnection.onmessage = function (evt) {
+                    let messageObj = JSON.parse(evt.data)
+                    app.messages.push(messageObj)
+                };
+            }
+        },
+        computed: {
+
+            blockConnection: function(){
+                return this.userName.trim().length < 2 || this.serverId.trim().length === 0;
+            },
+
+            blockSendMessage: function (){
+                return this.currentMessage.length === 0
+            }
+        },
+        watch:{
+            userName:{
+                handler(newValue, oldValue){
+                    this.changeValidation()
+                },
+                once: true
+            },
+
+            serverId:{
+                handler(newValue, oldValue){
+                    this.changeValidation()
+                },
+                once: true
+            }
+        }
+    })
+</script>
+</body>
+</html>

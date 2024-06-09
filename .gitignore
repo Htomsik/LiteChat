@@ -36,6 +36,7 @@
 ehthumbs.db
 Thumbs.db
 
+
 ### NetBeans template
 nbproject/private/
 build/
@@ -52,3 +53,5 @@ nb-configuration.xml
 
 ## Directory-based project format:
 .idea/
+
+## Compile time data

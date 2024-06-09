@@ -15,7 +15,36 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/isAlive": {
+        "/api/canConnect/{id}": {
+            "get": {
+                "summary": "Checking can connect to server",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/chat/{id}": {
+            "get": {
+                "summary": "Connecting to websocket chat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/isAlive": {
             "get": {
                 "summary": "checking server is alive",
                 "responses": {
