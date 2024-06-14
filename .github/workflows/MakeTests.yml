@@ -2,7 +2,7 @@ name: Makefile tests
 
 on:
   push:
-    branches: [ "main", "develop", "develop-sqlite3" ]
+    branches: [ "main", "Core"]
   pull_request:
     branches: [ "main" ]
 
