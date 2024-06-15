@@ -1,6 +1,7 @@
 package Server
 
 import (
+	"Chat/internal/app/store/memoryStore"
 	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
@@ -13,8 +14,10 @@ import (
 
 // TestServer_SimpleEndpoint checking simple endpoints
 func TestServer_SimpleEndpoint(t *testing.T) {
+
 	// Arrange
-	srv := newServer()
+	store := memoryStore.New()
+	srv := newServer(store)
 
 	cases := []struct {
 		name         string
