@@ -6,6 +6,7 @@ import (
 )
 
 type Hub struct {
+	Id              string
 	clients         map[string]*Client
 	msgRetranslator chan ChatMessage // listen message from client
 	register        chan *Client
@@ -14,8 +15,9 @@ type Hub struct {
 }
 
 // HewHub create new hub
-func HewHub(logger *logrus.Logger) *Hub {
+func HewHub(id string, logger *logrus.Logger) *Hub {
 	return &Hub{
+		Id:              id,
 		clients:         make(map[string]*Client),
 		msgRetranslator: make(chan ChatMessage),
 		register:        make(chan *Client),

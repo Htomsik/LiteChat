@@ -2,14 +2,12 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"net/http"
 )
-
-// TODO придумать как по нормальному это хранить
-var hubs = make(map[string]*model.Hub)
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -43,8 +41,15 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 		}
 
 		// if chat doesn't exists
-		hub, ok := hubs[hubId]
-		if !ok {
+		hub, err := srv.store.Hub().Find(hubId)
+
+		// if error is not record not found
+		if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
+			srv.respond(w, r, http.StatusInternalServerError, err)
+			return
+		}
+
+		if hub == nil {
 			srv.respond(w, r, http.StatusOK, nil)
 			return
 		}
@@ -79,12 +84,23 @@ func (srv *server) handleChat() http.HandlerFunc {
 		}
 
 		// Check is chat exists by id
-		hub, ok := hubs[hubId]
+		hub, err := srv.store.Hub().Find(hubId)
+
+		// if error is not record not found
+		if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
+			srv.respond(w, r, http.StatusInternalServerError, err)
+			return
+		}
 
 		// is no exists create new
-		if !ok {
-			hub = model.HewHub(srv.logger)
-			hubs[hubId] = hub
+		if hub == nil {
+			hub = model.HewHub(hubId, srv.logger)
+
+			err = srv.store.Hub().Add(hub)
+			if err != nil {
+				srv.respond(w, r, http.StatusInternalServerError, nil)
+			}
+
 			go hub.Run()
 		}
 

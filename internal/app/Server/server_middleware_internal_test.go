@@ -2,6 +2,7 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/store/memoryStore"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"
@@ -11,8 +12,10 @@ import (
 
 // TestServer_ChatUseMiddleware check user validation
 func TestServer_ChatUseMiddleware(t *testing.T) {
+
 	// Arrange
-	srv := newServer()
+	store := memoryStore.New()
+	srv := newServer(store)
 
 	// Create new cookie for response
 	dummyHandler := http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
