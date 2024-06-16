@@ -54,10 +54,10 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 			return
 		}
 
-		// Check is user with same name is connected
+		// Check is all right with user
 		user := r.Context().Value(contextUser).(*model.ChatUser)
-		if hub.FindClient(user.Name) != nil {
-			srv.respond(w, r, http.StatusUnprocessableEntity, fmt.Sprintf(model.AlreadyExists, user.Name))
+		if user == nil {
+			srv.respond(w, r, http.StatusInternalServerError, "")
 			return
 		}
 
@@ -104,11 +104,11 @@ func (srv *server) handleChat() http.HandlerFunc {
 			go hub.Run()
 		}
 
-		// Check is user with same name is connected
+		// Check is user with same originalName is connected
+		// if yes change name +1
 		user := r.Context().Value(contextUser).(*model.ChatUser)
-		if hub.FindClient(user.Name) != nil {
-			srv.respond(w, r, http.StatusUnprocessableEntity, fmt.Sprintf(model.AlreadyExists, user.Name))
-			return
+		if count := hub.CountUsersByOriginalName(user.Name); count > 0 {
+			user.Name = fmt.Sprintf("%v[%v]", user.Name, count)
 		}
 
 		// Create new websocket connection

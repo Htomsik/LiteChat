@@ -1,12 +1,13 @@
 package model
 
 import (
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 type Hub struct {
 	Id       string
-	clients  map[string]*Client // All users connected to chat
+	clients  map[uuid.UUID]*Client // All users connected to chat
 	messages []ChatMessage
 
 	msgRetranslator chan ChatMessage // listen message from client
@@ -20,7 +21,7 @@ type Hub struct {
 func HewHub(id string, logger *logrus.Logger) *Hub {
 	return &Hub{
 		Id:       id,
-		clients:  make(map[string]*Client),
+		clients:  make(map[uuid.UUID]*Client),
 		messages: make([]ChatMessage, 0),
 
 		msgRetranslator: make(chan ChatMessage),
@@ -32,23 +33,29 @@ func HewHub(id string, logger *logrus.Logger) *Hub {
 }
 
 // GetAllUsers returning all users in chat
-func (hub *Hub) GetAllUsers() []*ChatUser {
-	chatUsers := make([]*ChatUser, 0)
+func (hub *Hub) GetAllUsers() []ChatUser {
+	chatUsers := make([]ChatUser, 0)
 
 	for _, client := range hub.clients {
-		chatUsers = append(chatUsers, client.User)
+		chatUsers = append(chatUsers, *client.User)
 	}
 
 	return chatUsers
 }
 
-// FindClient find client by userName
-func (hub *Hub) FindClient(userName string) *Client {
-	client, ok := hub.clients[userName]
-	if !ok {
-		return nil
+// TODO сделать репозиторий управления юзерами
+
+// CountUsersByOriginalName find first client with original name
+func (hub *Hub) CountUsersByOriginalName(originalName string) int {
+	count := 0
+
+	for _, client := range hub.clients {
+		if client.User.originalName == originalName {
+			count++
+		}
 	}
-	return client
+
+	return count
 }
 
 // sendMessageAll send message to all users in hub
@@ -63,7 +70,12 @@ func (hub *Hub) sendMessageAll(message ChatMessage) {
 	}
 
 	for _, client := range hub.clients {
-		client.sendMessage <- message
+		localMessage := message
+		if localMessage.ClearPrivacy(client) {
+			client.sendMessage <- localMessage
+		} else {
+			hub.logger.Warnf("Can't clear client priuvacy")
+		}
 	}
 }
 
@@ -81,7 +93,7 @@ func (hub *Hub) Run() {
 
 		// Client connect
 		case client := <-hub.register:
-			hub.clients[client.User.Name] = client
+			hub.clients[client.User.Id] = client
 
 			hub.clientConnected(client)
 
@@ -92,9 +104,9 @@ func (hub *Hub) Run() {
 		// Client disconnect
 		case client := <-hub.unregister:
 
-			if _, ok := hub.clients[client.User.Name]; ok {
-				delete(hub.clients, client.User.Name) // Delete from hub
-				close(client.sendMessage)             // Close
+			if _, ok := hub.clients[client.User.Id]; ok {
+				delete(hub.clients, client.User.Id) // Delete from hub
+				close(client.sendMessage)           // Close
 			}
 
 			// Send message about disconnected
