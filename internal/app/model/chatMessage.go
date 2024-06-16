@@ -5,26 +5,39 @@ import (
 	"time"
 )
 
-const (
-	SystemUser = "System"
-)
-
 // ChatMessage message from chat
 type ChatMessage struct {
-	User     string    `json:"user"`
-	Message  string    `json:"message"`
-	DateTime time.Time `json:"dateTime"`
+	Type     ChatMessageType `json:"type"`
+	User     string          `json:"user"`
+	Message  any             `json:"message"`
+	DateTime time.Time       `json:"dateTime"`
 }
 
 // NewSystemMessage message from chat
-func NewSystemMessage(text string) ChatMessage {
-	return NewMessage(SystemUser, text)
+func (hub *Hub) NewSystemMessage(msgType ChatMessageType) ChatMessage {
+
+	message := ChatMessage{
+		User:     SystemUser,
+		Type:     msgType,
+		DateTime: time.Now(),
+	}
+
+	switch msgType {
+
+	case UsersList:
+		message.Message = hub.GetAllUsers()
+	default:
+		message.Message = ""
+	}
+
+	return message
 }
 
-func NewMessage(user string, text string) ChatMessage {
+func NewMessage(user string, message any) ChatMessage {
 	return ChatMessage{
+		Type:     Message,
 		User:     user,
-		Message:  text,
+		Message:  message,
 		DateTime: time.Now(),
 	}
 }
