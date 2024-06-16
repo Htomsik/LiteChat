@@ -2,6 +2,7 @@
 const messageType = Object.freeze({
     message:   "Message",
     userList:   "UsersList", // Receiving array of chat users
+    UserNameChanged:   "UserNameChanged",
 });
 
 
@@ -78,6 +79,9 @@ export default {
         socketOnMessage:function (evt) {
             let messageObj = JSON.parse(evt.data)
 
+
+            console.log(evt.data)
+
             switch (messageObj.type) {
 
                 case messageType.message:
@@ -86,6 +90,11 @@ export default {
 
                 case messageType.userList:
                     this.users = messageObj.message
+                    break;
+
+                case messageType.UserNameChanged:
+                    this.userName = messageObj.message
+                    break;
             }
         },
 

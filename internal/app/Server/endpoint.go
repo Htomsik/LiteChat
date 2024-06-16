@@ -3,7 +3,6 @@ package Server
 import (
 	"Chat/internal/app/model"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -104,11 +103,10 @@ func (srv *server) handleChat() http.HandlerFunc {
 			go hub.Run()
 		}
 
-		// Check is user with same originalName is connected
-		// if yes change name +1
 		user := r.Context().Value(contextUser).(*model.ChatUser)
-		if count := hub.CountUsersByOriginalName(user.Name); count > 0 {
-			user.Name = fmt.Sprintf("%v[%v]", user.Name, count)
+		if user == nil {
+			srv.respond(w, r, http.StatusInternalServerError, err)
+			return
 		}
 
 		// Create new websocket connection

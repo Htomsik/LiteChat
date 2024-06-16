@@ -49,21 +49,28 @@ func (msg *ChatMessage) ClearPrivacy(client *Client) bool {
 }
 
 // NewSystemMessage message from chat
-func (hub *Hub) NewSystemMessage(msgType ChatMessageType) ChatMessage {
+func (hub *Hub) NewSystemMessage(msgType ChatMessageType, data any) ChatMessage {
 
 	message := ChatMessage{
 		User:     SystemUser,
 		Type:     msgType,
 		DateTime: time.Now(),
+		Message:  data,
 	}
 
 	switch msgType {
 
 	case UsersList:
-		message.Message = hub.GetAllUsers()
+
+		if message.Message == nil {
+			message.Message = hub.GetAllUsers()
+		}
 		message.clearPrivacy = true
+
 	default:
-		message.Message = ""
+		if message.Message == nil {
+			message.Message = ""
+		}
 	}
 
 	return message
@@ -86,6 +93,8 @@ func (msg *ChatMessage) ToJson() string {
 
 // ToByteArray converting message to json and byte array
 func (msg *ChatMessage) ToByteArray() []byte {
+
 	byteMessage, _ := json.Marshal(msg)
+
 	return byteMessage
 }

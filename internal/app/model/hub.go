@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -95,11 +96,21 @@ func (hub *Hub) Run() {
 		case client := <-hub.register:
 			hub.clients[client.User.Id] = client
 
+			// Check is user with same originalName is connected
+			// if yes change name +1
+			if count := hub.CountUsersByOriginalName(client.User.Name); count > 1 {
+				client.User.Name = fmt.Sprintf("%v[%v]", client.User.Name, count)
+
+				// notify about changing username
+				msg := hub.NewSystemMessage(UserNameChanged, client.User.Name)
+				client.sendMessage <- msg
+			}
+
 			hub.clientConnected(client)
 
 			// Send message about connected
-			msg := hub.NewSystemMessage(UsersList)
-			hub.sendMessageAll(msg)
+			msgAll := hub.NewSystemMessage(UsersList, nil)
+			hub.sendMessageAll(msgAll)
 
 		// Client disconnect
 		case client := <-hub.unregister:
@@ -110,7 +121,7 @@ func (hub *Hub) Run() {
 			}
 
 			// Send message about disconnected
-			msg := hub.NewSystemMessage(UsersList)
+			msg := hub.NewSystemMessage(UsersList, "")
 			hub.sendMessageAll(msg)
 
 		// Retranslate to other clients
