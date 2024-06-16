@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,6 +31,17 @@ func HewHub(id string, logger *logrus.Logger) *Hub {
 	}
 }
 
+// GetAllUsers returning all users in chat
+func (hub *Hub) GetAllUsers() []*ChatUser {
+	chatUsers := make([]*ChatUser, 0)
+
+	for _, client := range hub.clients {
+		chatUsers = append(chatUsers, client.User)
+	}
+
+	return chatUsers
+}
+
 // FindClient find client by userName
 func (hub *Hub) FindClient(userName string) *Client {
 	client, ok := hub.clients[userName]
@@ -44,11 +54,13 @@ func (hub *Hub) FindClient(userName string) *Client {
 // sendMessageAll send message to all users in hub
 func (hub *Hub) sendMessageAll(message ChatMessage) {
 
-	// Todo придумать оптимизацию
-	if len(hub.messages) == 50 {
-		hub.messages = hub.messages[1:]
+	if message.Type == Message {
+		// Todo придумать оптимизацию
+		if len(hub.messages) == 50 {
+			hub.messages = hub.messages[1:]
+		}
+		hub.messages = append(hub.messages, message)
 	}
-	hub.messages = append(hub.messages, message)
 
 	for _, client := range hub.clients {
 		client.sendMessage <- message
@@ -74,20 +86,20 @@ func (hub *Hub) Run() {
 			hub.clientConnected(client)
 
 			// Send message about connected
-			msg := NewSystemMessage(fmt.Sprintf("%v connected to chat", client.User.Name))
+			msg := hub.NewSystemMessage(UsersList)
 			hub.sendMessageAll(msg)
 
 		// Client disconnect
 		case client := <-hub.unregister:
 
-			// Send message about connected
-			msg := NewSystemMessage(fmt.Sprintf("%v disconnected from chat", client.User.Name))
-			hub.sendMessageAll(msg)
-
 			if _, ok := hub.clients[client.User.Name]; ok {
 				delete(hub.clients, client.User.Name) // Delete from hub
 				close(client.sendMessage)             // Close
 			}
+
+			// Send message about disconnected
+			msg := hub.NewSystemMessage(UsersList)
+			hub.sendMessageAll(msg)
 
 		// Retranslate to other clients
 		case message, _ := <-hub.msgRetranslator:

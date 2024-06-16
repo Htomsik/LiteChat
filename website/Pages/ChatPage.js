@@ -1,3 +1,10 @@
+
+const messageType = Object.freeze({
+    message:   "Message",
+    userList:   "UsersList", // Receiving array of chat users
+});
+
+
 export default {
 
     emits: ['disconnect','alert'],
@@ -9,8 +16,10 @@ export default {
             serverId: "",
 
             chatSocket: null,
-            messages: [
+            users:[
+
             ],
+            messages: [],
             currentMessage: "",
         }
     },
@@ -68,13 +77,20 @@ export default {
 
         socketOnMessage:function (evt) {
             let messageObj = JSON.parse(evt.data)
-            this.messages.push(messageObj)
+
+            switch (messageObj.type) {
+
+                case messageType.message:
+                    this.messages.push(messageObj)
+                    break;
+
+                case messageType.userList:
+                    this.users = messageObj.message
+            }
         },
 
         formatMessageDateTime: function (dateTimeString){
-
             const dateTime = new Date(dateTimeString);
-
             const hours = dateTime.getHours();
             const minutes = dateTime.getMinutes();
 
@@ -95,8 +111,10 @@ export default {
           </div>
 
           <!--    Users   -->
-          <div class="colContainer" style=" flex-grow: 1">
-
+          <div class="colContainer overflow-auto" style=" flex-grow: 1">
+                <div class="userList-user" v-for="user in users" >
+                 {{user.Name}} 
+                </div>
           </div>
 
           <!--    Additional button -->

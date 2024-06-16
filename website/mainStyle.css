@@ -54,8 +54,13 @@ body,html{
     padding: 10px;
 }
 
-/*General*/
+.userList-user{
+    word-wrap:break-word;
+    font-size: 16px;
+    font-weight: bold;
+}
 
+/*General*/
 .card{
     margin: 5px;
     padding: 20px;
