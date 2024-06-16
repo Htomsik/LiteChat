@@ -12,10 +12,11 @@ type ChatMessageType int
 const (
 	Message ChatMessageType = iota
 	UsersList
+	UserNameChanged
 )
 
 func (msgType ChatMessageType) String() string {
-	return [...]string{"Message", "UsersList"}[msgType]
+	return [...]string{"Message", "UsersList", "UserNameChanged"}[msgType]
 }
 
 func (msgType ChatMessageType) MarshalJSON() ([]byte, error) {
