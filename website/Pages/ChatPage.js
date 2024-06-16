@@ -69,7 +69,17 @@ export default {
         socketOnMessage:function (evt) {
             let messageObj = JSON.parse(evt.data)
             this.messages.push(messageObj)
-        }
+        },
+
+        formatMessageDateTime: function (dateTimeString){
+
+            const dateTime = new Date(dateTimeString);
+
+            const hours = dateTime.getHours();
+            const minutes = dateTime.getMinutes();
+
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+        },
     },
     template:`
       
@@ -106,10 +116,13 @@ export default {
               <div v-for="item in messages" :class="{ messageBoxLeft: item.user === userName}" class="test">
 
                 <div class="message bg-secondary">
+                  
                   <span class="message-user">{{ item.user }}</span>
                   <div class="message-text">
                     {{ item.message }}
                   </div>
+                  <span class="message-dateTime">{{ formatMessageDateTime(item.dateTime) }}</span>
+                  
                 </div>
 
               </div>

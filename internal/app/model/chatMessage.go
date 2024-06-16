@@ -1,6 +1,9 @@
 package model
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 const (
 	SystemUser = "System"
@@ -8,15 +11,21 @@ const (
 
 // ChatMessage message from chat
 type ChatMessage struct {
-	User    string `json:"user"`
-	Message string `json:"message"`
+	User     string    `json:"user"`
+	Message  string    `json:"message"`
+	DateTime time.Time `json:"dateTime"`
 }
 
 // NewSystemMessage message from chat
 func NewSystemMessage(text string) ChatMessage {
+	return NewMessage(SystemUser, text)
+}
+
+func NewMessage(user string, text string) ChatMessage {
 	return ChatMessage{
-		User:    SystemUser,
-		Message: text,
+		User:     user,
+		Message:  text,
+		DateTime: time.Now(),
 	}
 }
 

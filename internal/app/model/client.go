@@ -49,11 +49,7 @@ func (client *Client) WriteToHub() {
 		}
 
 		stringMessage := string(message[:])
-
-		jsonMessage := ChatMessage{
-			User:    client.User.Name,
-			Message: stringMessage,
-		}
+		jsonMessage := NewMessage(client.User.Name, stringMessage)
 
 		client.hub.msgRetranslator <- jsonMessage
 	}
