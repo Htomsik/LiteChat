@@ -17,3 +17,8 @@ func NewChatUser(name string) *ChatUser {
 		originalName: name,
 	}
 }
+
+// OriginalName returned original name of user
+func (user *ChatUser) OriginalName() string {
+	return user.originalName
+}
