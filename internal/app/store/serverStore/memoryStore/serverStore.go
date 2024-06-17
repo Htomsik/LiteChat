@@ -2,21 +2,21 @@ package memoryStore
 
 import (
 	"Chat/internal/app/model"
-	"Chat/internal/app/store"
+	"Chat/internal/app/store/serverStore"
 )
 
-// Store memory storage
-type Store struct {
+// ServerStore memory storage
+type ServerStore struct {
 	hubRepository *HubRepository
 }
 
 // New create new store
-func New() *Store {
-	return &Store{}
+func New() *ServerStore {
+	return &ServerStore{}
 }
 
 // Hub get hub repository
-func (store *Store) Hub() store.HubRepository {
+func (store *ServerStore) Hub() serverStore.HubRepository {
 	if store.hubRepository != nil {
 		return store.hubRepository
 	}

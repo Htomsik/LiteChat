@@ -1,7 +1,7 @@
 package Server
 
 import (
-	"Chat/internal/app/store/memoryStore"
+	"Chat/internal/app/store/serverStore/memoryStore"
 	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/mattn/go-sqlite3"
 	"net/http"

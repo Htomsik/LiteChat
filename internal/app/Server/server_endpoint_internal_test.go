@@ -1,7 +1,7 @@
 package Server
 
 import (
-	"Chat/internal/app/store/memoryStore"
+	"Chat/internal/app/store/serverStore/memoryStore"
 	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"

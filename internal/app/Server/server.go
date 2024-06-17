@@ -1,7 +1,7 @@
 package Server
 
 import (
-	"Chat/internal/app/store"
+	"Chat/internal/app/store/serverStore"
 	"encoding/json"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -17,11 +17,11 @@ const (
 type server struct {
 	router *mux.Router
 	logger *logrus.Logger
-	store  store.Store
+	store  serverStore.ServerStore
 }
 
 // newServer ...
-func newServer(store store.Store) *server {
+func newServer(store serverStore.ServerStore) *server {
 	srv := &server{
 		router: mux.NewRouter().StrictSlash(true),
 		logger: logrus.New(),

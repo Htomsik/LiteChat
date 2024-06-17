@@ -1,4 +1,4 @@
-package store
+package serverStore
 
 import "Chat/internal/app/model"
 

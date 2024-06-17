@@ -2,7 +2,7 @@ package Server
 
 import (
 	"Chat/internal/app/model"
-	"Chat/internal/app/store/memoryStore"
+	"Chat/internal/app/store/serverStore/memoryStore"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"net/http"

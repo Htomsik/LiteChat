@@ -7,7 +7,7 @@ import (
 
 // HubRepository memory hub storage
 type HubRepository struct {
-	store *Store
+	store *ServerStore
 	hubs  map[string]*model.Hub
 }
 
