@@ -95,3 +95,27 @@ func (repository *ClientRepository) Remove(id uuid.UUID) error {
 
 	return nil
 }
+
+// All get all clients
+func (repository *ClientRepository) All() (map[uuid.UUID]*model.Client, error) {
+	if repository.clients == nil {
+		return nil, model.ErrorRecordNotFound
+	}
+
+	return repository.clients, nil
+}
+
+// AllUsers get all chat users
+func (repository *ClientRepository) AllUsers() ([]*model.ChatUser, error) {
+
+	if repository.clients == nil {
+		return nil, model.ErrorRecordNotFound
+	}
+
+	users := make([]*model.ChatUser, 0)
+	for _, client := range repository.clients {
+		users = append(users, client.User)
+	}
+
+	return users, nil
+}
