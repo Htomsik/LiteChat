@@ -1,11 +1,11 @@
-package client
+package websocket
 
 import (
 	"Chat/internal/app/model/chat"
 	"github.com/gorilla/websocket"
 )
 
-// Client middleware around hub and client
+// Client middleware around hub and websocket
 type Client struct {
 	User        *chat.User
 	connection  *websocket.Conn
@@ -18,7 +18,14 @@ func (client *Client) RegisterToHub() {
 	client.commands.Register <- client
 }
 
-// NewClient create new client
+// Disconnect close all client chans and clear data
+func (client *Client) Disconnect() {
+	if client.SendMessage != nil {
+		close(client.SendMessage)
+	}
+}
+
+// NewClient create new websocket
 func NewClient(commands *Retranslator, connection *websocket.Conn, user *chat.User) *Client {
 
 	return &Client{
@@ -29,7 +36,7 @@ func NewClient(commands *Retranslator, connection *websocket.Conn, user *chat.Us
 	}
 }
 
-// WriteToHub write client messages and pump it to hub
+// WriteToHub write websocket messages and pump it to hub
 func (client *Client) WriteToHub() {
 	defer func() {
 		client.commands.Unregister <- client
@@ -54,7 +61,7 @@ func (client *Client) WriteToHub() {
 
 }
 
-// ReadFromHub write client hub messages and pump it to client
+// ReadFromHub write websocket hub messages and pump it to websocket
 func (client *Client) ReadFromHub() {
 
 	// TODO добавить время обработки запроса
@@ -68,7 +75,7 @@ func (client *Client) ReadFromHub() {
 
 	for {
 		select {
-		// listening client hub messages
+		// listening websocket hub messages
 		case chatMessage, ok := <-client.SendMessage:
 			// Check hub closed
 			if !ok {

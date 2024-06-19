@@ -2,6 +2,7 @@ package memoryStore
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/constants"
 	"errors"
 )
 
@@ -18,13 +19,13 @@ func (repository *HubRepository) Add(hub *model.Hub) error {
 	hubFind, err := repository.Find(hub.Id)
 
 	// if error is not record not found
-	if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
+	if err != nil && !errors.Is(err, constants.ErrorRecordNotFound) {
 		return err
 	}
 
 	// if hub exists don't create new
 	if hubFind != nil {
-		return model.ErrorAlreadyExists
+		return constants.ErrorAlreadyExists
 	}
 
 	repository.hubs[hub.Id] = hub
@@ -39,7 +40,7 @@ func (repository *HubRepository) Find(id string) (*model.Hub, error) {
 		return hub, nil
 	}
 
-	return nil, model.ErrorRecordNotFound
+	return nil, constants.ErrorRecordNotFound
 }
 
 // Remove delete exists chat hub

@@ -1,7 +1,7 @@
 package memoryStore
 
 import (
-	"Chat/internal/app/model/client"
+	"Chat/internal/app/model/websocket"
 	"Chat/internal/app/store/hubStore"
 	"github.com/google/uuid"
 )
@@ -15,7 +15,7 @@ func New() *HubStore {
 	return &HubStore{}
 }
 
-// Client get client repository
+// Client get websocket repository
 func (store *HubStore) Client() hubStore.ClientRepository {
 	if store.clientRepository != nil {
 		return store.clientRepository
@@ -23,7 +23,7 @@ func (store *HubStore) Client() hubStore.ClientRepository {
 
 	store.clientRepository = &ClientRepository{
 		store:   store,
-		clients: make(map[uuid.UUID]*client.Client),
+		clients: make(map[uuid.UUID]*websocket.Client),
 	}
 
 	return store.clientRepository

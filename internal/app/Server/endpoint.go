@@ -3,7 +3,8 @@ package Server
 import (
 	"Chat/internal/app/model"
 	"Chat/internal/app/model/chat"
-	client "Chat/internal/app/model/client"
+	"Chat/internal/app/model/constants"
+	client "Chat/internal/app/model/websocket"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -45,7 +46,7 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 		hub, err := srv.store.Hub().Find(hubId)
 
 		// if error is not record not found
-		if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
+		if err != nil && !errors.Is(err, constants.ErrorRecordNotFound) {
 			srv.respond(w, r, http.StatusInternalServerError, err)
 			return
 		}
@@ -66,8 +67,8 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 	}
 }
 
-// handleChat client chat
-// @Summary      Connecting to client chat
+// handleChat websocket chat
+// @Summary      Connecting to websocket chat
 // @Success      200
 // @Param        id   path      string  true  "Chat id"
 // @Router       /api/chat/{id} [Get]
@@ -88,7 +89,7 @@ func (srv *server) handleChat() http.HandlerFunc {
 		hub, err := srv.store.Hub().Find(hubId)
 
 		// if error is not record not found
-		if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
+		if err != nil && !errors.Is(err, constants.ErrorRecordNotFound) {
 			srv.respond(w, r, http.StatusInternalServerError, err)
 			return
 		}
@@ -111,11 +112,11 @@ func (srv *server) handleChat() http.HandlerFunc {
 			return
 		}
 
-		// Create new client connection
+		// Create new websocket connection
 		connection, err := upgrader.Upgrade(w, r, nil)
 
 		if err != nil {
-			srv.logger.Infof("Can't create client connection: %v", err)
+			srv.logger.Infof("Can't create websocket connection: %v", err)
 			return
 		}
 

@@ -2,7 +2,7 @@ package memoryStore_test
 
 import (
 	"Chat/internal/app/model/chat"
-	"Chat/internal/app/model/client"
+	"Chat/internal/app/model/websocket"
 	"Chat/internal/app/store/hubStore/memoryStore"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -16,11 +16,11 @@ func TestClientRepository_Add(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &client.Client{
+	clientNotExists := &websocket.Client{
 		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &client.Client{
+	clientExists := &websocket.Client{
 		User: chat.NewChatUser(nameExists),
 	}
 
@@ -43,11 +43,11 @@ func TestClientRepository_Remove(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &client.Client{
+	clientNotExists := &websocket.Client{
 		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &client.Client{
+	clientExists := &websocket.Client{
 		User: chat.NewChatUser(nameExists),
 	}
 
@@ -70,11 +70,11 @@ func TestClientRepository_Find(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &client.Client{
+	clientNotExists := &websocket.Client{
 		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &client.Client{
+	clientExists := &websocket.Client{
 		User: chat.NewChatUser(nameExists),
 	}
 
@@ -101,7 +101,7 @@ func TestClientRepository_CountByOriginalName(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientExists := &client.Client{
+	clientExists := &websocket.Client{
 		User: chat.NewChatUser(nameExists),
 	}
 	st.Client().Add(clientExists)

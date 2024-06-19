@@ -1,6 +1,8 @@
 package serverStore
 
-import "Chat/internal/app/model"
+import (
+	"Chat/internal/app/model"
+)
 
 // HubRepository chats storage
 type HubRepository interface {

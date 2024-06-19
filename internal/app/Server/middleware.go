@@ -1,8 +1,8 @@
 package Server
 
 import (
-	"Chat/internal/app/model"
 	"Chat/internal/app/model/chat"
+	"Chat/internal/app/model/constants"
 	"context"
 	"errors"
 	"fmt"
@@ -26,16 +26,16 @@ func (srv *server) chatUserMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// Check is userNameMatch header exists
-		userQuery := r.URL.Query().Get(model.QueryValueUser)
+		userQuery := r.URL.Query().Get(constants.QueryValueUser)
 		if userQuery == "" {
-			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(model.QueryVariableNotFound, model.QueryValueUser)))
+			srv.error(w, r, http.StatusBadRequest, errors.New(fmt.Sprintf(constants.QueryVariableNotFound, constants.QueryValueUser)))
 			return
 		}
 
 		// Check is userName valid
 		userName := strings.TrimSpace(userQuery)
 		if len(userName) < 2 || len(userName) > 20 {
-			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v user must be in the range of 2 to 20 characters", model.QueryValueUser)))
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v user must be in the range of 2 to 20 characters", constants.QueryValueUser)))
 			return
 		}
 
@@ -43,7 +43,7 @@ func (srv *server) chatUserMiddleWare(next http.Handler) http.Handler {
 		userNameMatch := re.ReplaceAllString(userName, "")
 
 		if userNameMatch != "" {
-			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v must be only from numbers and latin symbols", model.QueryValueUser)))
+			srv.error(w, r, http.StatusUnprocessableEntity, errors.New(fmt.Sprintf("%v must be only from numbers and latin symbols", constants.QueryValueUser)))
 			return
 		}
 
@@ -60,7 +60,7 @@ func (srv *server) requestIDMiddleWare(next http.Handler) http.Handler {
 		guid := uuid.New().String()
 
 		// Set guid to header
-		writer.Header().Set(model.RequestIdHeader, guid)
+		writer.Header().Set(constants.RequestIdHeader, guid)
 
 		// Throw request id next
 		next.ServeHTTP(writer, request.WithContext(context.WithValue(request.Context(), contextRequestId, guid)))

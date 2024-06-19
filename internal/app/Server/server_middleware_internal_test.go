@@ -1,8 +1,8 @@
 package Server
 
 import (
-	"Chat/internal/app/model"
 	"Chat/internal/app/model/chat"
+	"Chat/internal/app/model/constants"
 	"Chat/internal/app/store/serverStore/memoryStore"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -65,7 +65,7 @@ func TestServer_ChatUseMiddleware(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/api/chat/1?%v=%v", model.QueryValueUser, testCase.model.Name)
+			url := fmt.Sprintf("/api/chat/1?%v=%v", constants.QueryValueUser, testCase.model.Name)
 
 			request, _ := http.NewRequest(http.MethodGet, url, nil)
 
