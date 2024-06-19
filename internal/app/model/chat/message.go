@@ -1,4 +1,4 @@
-package model
+package chat
 
 import (
 	"encoding/json"
@@ -6,17 +6,17 @@ import (
 	"time"
 )
 
-// ChatMessage message from chat
-type ChatMessage struct {
-	Type         ChatMessageType `json:"type"`
-	User         string          `json:"user"`
-	Message      any             `json:"message"`
-	DateTime     time.Time       `json:"dateTime"`
+// Message letter from chat
+type Message struct {
+	Type         MessageType `json:"type"`
+	User         string      `json:"user"`
+	Message      any         `json:"message"`
+	DateTime     time.Time   `json:"dateTime"`
 	clearPrivacy bool
 }
 
 // ClearPrivacy clear privacy for current user
-func (msg *ChatMessage) ClearPrivacy(client *Client) bool {
+func (msg *Message) ClearPrivacy(chatUser *User) bool {
 
 	if !msg.clearPrivacy {
 		return true
@@ -24,16 +24,16 @@ func (msg *ChatMessage) ClearPrivacy(client *Client) bool {
 
 	switch msg.Type {
 
-	case UsersList:
+	case TypeUsersList:
 
 		// Clear userData
-		var clearUsers = make([]ChatUser, 0)
+		var clearUsers = make([]User, 0)
 
-		if value, ok := msg.Message.([]ChatUser); !ok {
+		if value, ok := msg.Message.([]User); !ok {
 			return ok
 		} else {
 			for _, user := range value {
-				if user.Id != client.User.Id {
+				if user.Id != chatUser.Id {
 					user.Id = uuid.Nil
 				}
 				clearUsers = append(clearUsers, user)
@@ -49,9 +49,9 @@ func (msg *ChatMessage) ClearPrivacy(client *Client) bool {
 }
 
 // NewSystemMessage message from chat
-func (hub *Hub) NewSystemMessage(msgType ChatMessageType, data any) ChatMessage {
+func NewSystemMessage(msgType MessageType, data any) Message {
 
-	message := ChatMessage{
+	message := Message{
 		User:     SystemUser,
 		Type:     msgType,
 		DateTime: time.Now(),
@@ -60,11 +60,7 @@ func (hub *Hub) NewSystemMessage(msgType ChatMessageType, data any) ChatMessage 
 
 	switch msgType {
 
-	case UsersList:
-
-		if message.Message == nil {
-			message.Message = hub.GetAllUsers()
-		}
+	case TypeUsersList:
 		message.clearPrivacy = true
 
 	default:
@@ -76,9 +72,9 @@ func (hub *Hub) NewSystemMessage(msgType ChatMessageType, data any) ChatMessage 
 	return message
 }
 
-func NewMessage(user string, message any) ChatMessage {
-	return ChatMessage{
-		Type:     Message,
+func NewMessage(user string, message any) Message {
+	return Message{
+		Type:     TypeMessage,
 		User:     user,
 		Message:  message,
 		DateTime: time.Now(),
@@ -86,13 +82,13 @@ func NewMessage(user string, message any) ChatMessage {
 }
 
 // ToJson converting message to json
-func (msg *ChatMessage) ToJson() string {
+func (msg *Message) ToJson() string {
 	byteMessage, _ := json.Marshal(msg)
 	return string(byteMessage)
 }
 
 // ToByteArray converting message to json and byte array
-func (msg *ChatMessage) ToByteArray() []byte {
+func (msg *Message) ToByteArray() []byte {
 
 	byteMessage, _ := json.Marshal(msg)
 

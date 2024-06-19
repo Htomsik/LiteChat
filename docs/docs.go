@@ -27,7 +27,7 @@ const docTemplate = `{
         },
         "/api/chat/{id}": {
             "get": {
-                "summary": "Connecting to websocket chat",
+                "summary": "Connecting to client chat",
                 "parameters": [
                     {
                         "type": "string",

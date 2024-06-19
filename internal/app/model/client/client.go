@@ -1,40 +1,38 @@
-package model
+package client
 
 import (
+	"Chat/internal/app/model/chat"
 	"github.com/gorilla/websocket"
-	"github.com/sirupsen/logrus"
 )
 
-// Client middleware around hub and websocket
+// Client middleware around hub and client
 type Client struct {
-	User        *ChatUser
-	hub         *Hub
+	User        *chat.User
 	connection  *websocket.Conn
-	logger      *logrus.Logger
-	sendMessage chan ChatMessage
+	SendMessage chan chat.Message
+	commands    *Retranslator
 }
 
 // RegisterToHub register clint to hub
 func (client *Client) RegisterToHub() {
-	client.hub.register <- client
+	client.commands.Register <- client
 }
 
 // NewClient create new client
-func NewClient(hub *Hub, connection *websocket.Conn, user *ChatUser) *Client {
+func NewClient(commands *Retranslator, connection *websocket.Conn, user *chat.User) *Client {
 
 	return &Client{
 		User:        user,
-		hub:         hub,
 		connection:  connection,
-		logger:      hub.logger,
-		sendMessage: make(chan ChatMessage),
+		SendMessage: make(chan chat.Message),
+		commands:    commands,
 	}
 }
 
-// WriteToHub write websocket messages and pump it to hub
+// WriteToHub write client messages and pump it to hub
 func (client *Client) WriteToHub() {
 	defer func() {
-		client.hub.unregister <- client
+		client.commands.Unregister <- client
 		client.connection.Close()
 	}()
 
@@ -43,20 +41,20 @@ func (client *Client) WriteToHub() {
 
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				client.logger.Infof("Error when read connection from hub %v", err)
+				client.commands.logger.Infof("Error when read connection from hub %v", err)
 			}
 			break
 		}
 
 		stringMessage := string(message[:])
-		jsonMessage := NewMessage(client.User.Name, stringMessage)
+		jsonMessage := chat.NewMessage(client.User.Name, stringMessage)
 
-		client.hub.msgRetranslator <- jsonMessage
+		client.commands.Message <- jsonMessage
 	}
 
 }
 
-// ReadFromHub write client hub messages and pump it to websocket
+// ReadFromHub write client hub messages and pump it to client
 func (client *Client) ReadFromHub() {
 
 	// TODO добавить время обработки запроса
@@ -64,14 +62,14 @@ func (client *Client) ReadFromHub() {
 		err := client.connection.Close()
 
 		if err != nil {
-			client.logger.Infof("Error when close websocet connection %v", err)
+			client.commands.logger.Infof("Error when close websocet connection %v", err)
 		}
 	}()
 
 	for {
 		select {
 		// listening client hub messages
-		case chatMessage, ok := <-client.sendMessage:
+		case chatMessage, ok := <-client.SendMessage:
 			// Check hub closed
 			if !ok {
 				client.connection.WriteMessage(websocket.CloseMessage, []byte{})
@@ -81,14 +79,14 @@ func (client *Client) ReadFromHub() {
 			// get next author and send chatMessage from him
 			writer, err := client.connection.NextWriter(websocket.TextMessage)
 			if err != nil {
-				client.logger.Infof("Error when get next writer %v", err)
+				client.commands.logger.Infof("Error when get next writer %v", err)
 				return
 			} else {
 				writer.Write(chatMessage.ToByteArray())
 			}
 
 			if err := writer.Close(); err != nil {
-				client.logger.Infof("Error when close writer %v", err)
+				client.commands.logger.Infof("Error when close writer %v", err)
 				return
 			}
 

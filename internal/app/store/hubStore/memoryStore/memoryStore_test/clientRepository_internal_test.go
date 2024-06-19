@@ -1,7 +1,8 @@
 package memoryStore_test
 
 import (
-	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
+	"Chat/internal/app/model/client"
 	"Chat/internal/app/store/hubStore/memoryStore"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -15,12 +16,12 @@ func TestClientRepository_Add(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &model.Client{
-		User: model.NewChatUser(nameNotExists),
+	clientNotExists := &client.Client{
+		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &model.Client{
-		User: model.NewChatUser(nameExists),
+	clientExists := &client.Client{
+		User: chat.NewChatUser(nameExists),
 	}
 
 	st.Client().Add(clientExists)
@@ -42,12 +43,12 @@ func TestClientRepository_Remove(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &model.Client{
-		User: model.NewChatUser(nameNotExists),
+	clientNotExists := &client.Client{
+		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &model.Client{
-		User: model.NewChatUser(nameExists),
+	clientExists := &client.Client{
+		User: chat.NewChatUser(nameExists),
 	}
 
 	st.Client().Add(clientExists)
@@ -69,12 +70,12 @@ func TestClientRepository_Find(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientNotExists := &model.Client{
-		User: model.NewChatUser(nameNotExists),
+	clientNotExists := &client.Client{
+		User: chat.NewChatUser(nameNotExists),
 	}
 
-	clientExists := &model.Client{
-		User: model.NewChatUser(nameExists),
+	clientExists := &client.Client{
+		User: chat.NewChatUser(nameExists),
 	}
 
 	st.Client().Add(clientExists)
@@ -100,8 +101,8 @@ func TestClientRepository_CountByOriginalName(t *testing.T) {
 
 	st := memoryStore.New()
 
-	clientExists := &model.Client{
-		User: model.NewChatUser(nameExists),
+	clientExists := &client.Client{
+		User: chat.NewChatUser(nameExists),
 	}
 	st.Client().Add(clientExists)
 

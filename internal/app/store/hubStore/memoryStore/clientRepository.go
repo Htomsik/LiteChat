@@ -2,6 +2,8 @@ package memoryStore
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
+	"Chat/internal/app/model/client"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -10,16 +12,17 @@ import (
 // ClientRepository storage of chat users
 type ClientRepository struct {
 	store   *HubStore
-	clients map[uuid.UUID]*model.Client
+	clients map[uuid.UUID]*client.Client
 }
 
 // GetClientsOriginalName returning map of users by original usernames
-func (repository *ClientRepository) GetClientsOriginalName() map[string][]*model.Client {
-	clients := make(map[string][]*model.Client)
+func (repository *ClientRepository) GetClientsOriginalName() map[string][]*client.Client {
+	clients := make(map[string][]*client.Client)
 
-	for _, client := range repository.clients {
-		clientsByName := make([]*model.Client, 0)
-		originalName := client.User.OriginalName()
+	for _, cl := range repository.clients {
+
+		clientsByName := make([]*client.Client, 0)
+		originalName := cl.User.OriginalName()
 
 		// If clients have array of users by this username
 		// just add
@@ -27,7 +30,7 @@ func (repository *ClientRepository) GetClientsOriginalName() map[string][]*model
 		if clientOrig, ok := clients[originalName]; ok {
 			clientsByName = append(clientsByName, clientOrig...)
 		} else {
-			clientsByName = append(clientsByName, client)
+			clientsByName = append(clientsByName, cl)
 		}
 
 		clients[originalName] = clientsByName
@@ -37,7 +40,7 @@ func (repository *ClientRepository) GetClientsOriginalName() map[string][]*model
 }
 
 // Find search client by guid
-func (repository *ClientRepository) Find(id uuid.UUID) (*model.Client, error) {
+func (repository *ClientRepository) Find(id uuid.UUID) (*client.Client, error) {
 	if client, ok := repository.clients[id]; ok {
 		return client, nil
 	}
@@ -56,7 +59,7 @@ func (repository *ClientRepository) CountByOriginalName(originalName string) (in
 }
 
 // Add returned new userName if its changed
-func (repository *ClientRepository) Add(client *model.Client) (string, error) {
+func (repository *ClientRepository) Add(client *client.Client) (string, error) {
 
 	clientFind, err := repository.Find(client.User.Id)
 	if err != nil && !errors.Is(err, model.ErrorRecordNotFound) {
@@ -97,7 +100,7 @@ func (repository *ClientRepository) Remove(id uuid.UUID) error {
 }
 
 // All get all clients
-func (repository *ClientRepository) All() (map[uuid.UUID]*model.Client, error) {
+func (repository *ClientRepository) All() (map[uuid.UUID]*client.Client, error) {
 	if repository.clients == nil {
 		return nil, model.ErrorRecordNotFound
 	}
@@ -106,13 +109,13 @@ func (repository *ClientRepository) All() (map[uuid.UUID]*model.Client, error) {
 }
 
 // AllUsers get all chat users
-func (repository *ClientRepository) AllUsers() ([]*model.ChatUser, error) {
+func (repository *ClientRepository) AllUsers() ([]*chat.User, error) {
 
 	if repository.clients == nil {
 		return nil, model.ErrorRecordNotFound
 	}
 
-	users := make([]*model.ChatUser, 0)
+	users := make([]*chat.User, 0)
 	for _, client := range repository.clients {
 		users = append(users, client.User)
 	}

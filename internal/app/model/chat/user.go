@@ -1,17 +1,17 @@
-package model
+package chat
 
 import "github.com/google/uuid"
 
-// ChatUser user info in chat
-type ChatUser struct {
+// User user info in chat
+type User struct {
 	Id           uuid.UUID `json:"Id"`
 	Name         string    `json:"Name"`
 	originalName string
 }
 
 // NewChatUser generate new user
-func NewChatUser(name string) *ChatUser {
-	return &ChatUser{
+func NewChatUser(name string) *User {
+	return &User{
 		Id:           uuid.New(),
 		Name:         name,
 		originalName: name,
@@ -19,6 +19,6 @@ func NewChatUser(name string) *ChatUser {
 }
 
 // OriginalName returned original name of user
-func (user *ChatUser) OriginalName() string {
+func (user *User) OriginalName() string {
 	return user.originalName
 }

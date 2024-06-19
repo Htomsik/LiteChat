@@ -2,6 +2,7 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
 	"context"
 	"errors"
 	"fmt"
@@ -46,7 +47,7 @@ func (srv *server) chatUserMiddleWare(next http.Handler) http.Handler {
 			return
 		}
 
-		chatUser := model.NewChatUser(userName)
+		chatUser := chat.NewChatUser(userName)
 
 		// Throw userNameMatch context next
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), contextUser, chatUser)))

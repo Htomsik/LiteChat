@@ -2,6 +2,8 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
+	client "Chat/internal/app/model/client"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
@@ -54,7 +56,7 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 		}
 
 		// Check is all right with user
-		user := r.Context().Value(contextUser).(*model.ChatUser)
+		user := r.Context().Value(contextUser).(*chat.User)
 		if user == nil {
 			srv.respond(w, r, http.StatusInternalServerError, "")
 			return
@@ -64,8 +66,8 @@ func (srv *server) handleCanConnect() http.HandlerFunc {
 	}
 }
 
-// handleChat websocket chat
-// @Summary      Connecting to websocket chat
+// handleChat client chat
+// @Summary      Connecting to client chat
 // @Success      200
 // @Param        id   path      string  true  "Chat id"
 // @Router       /api/chat/{id} [Get]
@@ -103,21 +105,21 @@ func (srv *server) handleChat() http.HandlerFunc {
 			go hub.Run()
 		}
 
-		user := r.Context().Value(contextUser).(*model.ChatUser)
+		user := r.Context().Value(contextUser).(*chat.User)
 		if user == nil {
 			srv.respond(w, r, http.StatusInternalServerError, err)
 			return
 		}
 
-		// Create new websocket connection
+		// Create new client connection
 		connection, err := upgrader.Upgrade(w, r, nil)
 
 		if err != nil {
-			srv.logger.Infof("Can't create websocket connection: %v", err)
+			srv.logger.Infof("Can't create client connection: %v", err)
 			return
 		}
 
-		client := model.NewClient(hub, connection, user)
+		client := client.NewClient(hub.Commands, connection, user)
 		client.RegisterToHub()
 
 		go client.WriteToHub()

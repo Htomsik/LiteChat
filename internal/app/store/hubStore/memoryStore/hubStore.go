@@ -1,7 +1,7 @@
 package memoryStore
 
 import (
-	"Chat/internal/app/model"
+	"Chat/internal/app/model/client"
 	"Chat/internal/app/store/hubStore"
 	"github.com/google/uuid"
 )
@@ -23,7 +23,7 @@ func (store *HubStore) Client() hubStore.ClientRepository {
 
 	store.clientRepository = &ClientRepository{
 		store:   store,
-		clients: make(map[uuid.UUID]*model.Client),
+		clients: make(map[uuid.UUID]*client.Client),
 	}
 
 	return store.clientRepository

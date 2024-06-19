@@ -2,6 +2,7 @@ package Server
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
 	"Chat/internal/app/store/serverStore/memoryStore"
 	"fmt"
 	"github.com/stretchr/testify/assert"
@@ -24,37 +25,37 @@ func TestServer_ChatUseMiddleware(t *testing.T) {
 
 	cases := []struct {
 		name         string
-		model        model.ChatUser
+		model        chat.User
 		expectedCode int
 	}{
 		{
 			name:         "NoData",
-			model:        model.ChatUser{Name: ""},
+			model:        chat.User{Name: ""},
 			expectedCode: http.StatusBadRequest,
 		},
 		{
 			name:         "OK",
-			model:        model.ChatUser{Name: "TWO"},
+			model:        chat.User{Name: "TWO"},
 			expectedCode: http.StatusOK,
 		},
 		{
 			name:         "Less than 2",
-			model:        model.ChatUser{Name: "1"},
+			model:        chat.User{Name: "1"},
 			expectedCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:         "More than 20",
-			model:        model.ChatUser{Name: "1111111111111111111111111111111111111111111111111111"},
+			model:        chat.User{Name: "1111111111111111111111111111111111111111111111111111"},
 			expectedCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:         "Less than 20",
-			model:        model.ChatUser{Name: "1111111111111111111111111111111111111111111111111111"},
+			model:        chat.User{Name: "1111111111111111111111111111111111111111111111111111"},
 			expectedCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:         "Invalid symbols",
-			model:        model.ChatUser{Name: "TWO@"},
+			model:        chat.User{Name: "TWO@"},
 			expectedCode: http.StatusUnprocessableEntity,
 		},
 	}
