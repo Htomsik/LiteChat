@@ -86,6 +86,11 @@ export default {
                     break;
 
                 case messageType.userList:
+
+                    // Set colors by usernames
+                    for (let user of messageObj.message) {
+                        user.Color = this.getRandomHexColorByUserName(user.Name)
+                    }
                     this.users = messageObj.message
                     break;
 
@@ -102,6 +107,31 @@ export default {
 
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
         },
+
+        getRandomHexColorByUserName: function (username){
+
+            // Generate color
+            let hash = 0;
+            for (let i = 0; i < username.length; i++) {
+                hash = username.charCodeAt(i) + ((hash << 10) - hash);
+            }
+
+            // Generate random color by hash
+            let hex = (hash & 0x00FFFFFF).toString(16).toUpperCase();
+
+            let r = parseInt(hex.substring(0, 2), 16);
+            let g = parseInt(hex.substring(2, 4), 16);
+            let b = parseInt(hex.substring(4, 6), 16);
+
+            // add or remove brightness 1 light 0 dark 0.5 original
+            let factor = 0.2
+            r = Math.round(r + (255 - r) * factor);
+            g = Math.round(g + (255 - g) * factor);
+            b = Math.round(b + (255 - b) * factor);
+
+            // Translate into hex
+            return `#${Math.round(r).toString(16)}${Math.round(g).toString(16)}${Math.round(b).toString(16)}`
+        }
     },
     template:`
       
@@ -118,7 +148,11 @@ export default {
 
           <!--    Users   -->
           <div class="colContainer overflow-auto" style=" flex-grow: 1">
-                <div class="userList-user" v-for="user in users" >
+                <div class="userList-user rowContainer" v-for="user in users" >
+                <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
+                {{user.Name[0]}} 
+                </div>
+                
                  {{user.Name}} 
                 </div>
           </div>
