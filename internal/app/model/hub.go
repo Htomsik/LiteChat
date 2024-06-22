@@ -9,21 +9,38 @@ import (
 )
 
 type Hub struct {
-	Id       string
-	store    hubStore.HubStore
-	messages []chat.Message
-	Commands *websocket.Retranslator
-	logger   *logrus.Logger
+	Id         string
+	store      hubStore.HubStore
+	messages   []chat.Message
+	Commands   *websocket.Retranslator
+	logger     *logrus.Logger
+	hubDeleted chan string
 }
 
 // HewHub create new hub
-func HewHub(id string, logger *logrus.Logger) *Hub {
+func HewHub(id string, logger *logrus.Logger, hubDeleted chan string) *Hub {
 	return &Hub{
-		Id:       id,
-		store:    memoryStore.New(),
-		messages: make([]chat.Message, 0),
-		Commands: websocket.NewCommands(logger),
-		logger:   logger,
+		Id:         id,
+		store:      memoryStore.New(),
+		messages:   make([]chat.Message, 0),
+		Commands:   websocket.NewCommands(logger),
+		logger:     logger,
+		hubDeleted: hubDeleted,
+	}
+}
+
+// Close delete all connections
+func (hub *Hub) Close() {
+	clients, err := hub.store.Client().All()
+
+	// Close connections to all users
+	if err != nil {
+		hub.logger.Error(err)
+	}
+	if len(clients) > 0 {
+		for _, client := range clients {
+			client.Disconnect()
+		}
 	}
 }
 
@@ -70,7 +87,6 @@ func (hub *Hub) Run() {
 
 		// Client connect
 		case client := <-hub.Commands.Register:
-
 			originName := client.User.OriginalName()
 
 			newName, err := hub.store.Client().Add(client)
@@ -113,6 +129,15 @@ func (hub *Hub) Run() {
 			}
 			msg := chat.NewSystemMessage(chat.TypeUsersList, users)
 			hub.sendMessageAll(msg)
+
+			// Delete hub if zero clients
+			clients, err := hub.store.Client().All()
+			if err != nil {
+				hub.logger.Error(err)
+			}
+			if len(clients) == 0 {
+				hub.hubDeleted <- hub.Id
+			}
 
 		// Retranslate to other clients
 		case message, _ := <-hub.Commands.Message:

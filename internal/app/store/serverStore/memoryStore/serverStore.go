@@ -1,18 +1,21 @@
 package memoryStore
 
 import (
-	"Chat/internal/app/model"
 	"Chat/internal/app/store/serverStore"
+	"github.com/sirupsen/logrus"
 )
 
 // ServerStore memory storage
 type ServerStore struct {
 	hubRepository *HubRepository
+	logger        *logrus.Logger
 }
 
 // New create new store
 func New() *ServerStore {
-	return &ServerStore{}
+	return &ServerStore{
+		logger: logrus.New(),
+	}
 }
 
 // Hub get hub repository
@@ -21,10 +24,7 @@ func (store *ServerStore) Hub() serverStore.HubRepository {
 		return store.hubRepository
 	}
 
-	store.hubRepository = &HubRepository{
-		store: store,
-		hubs:  make(map[string]*model.Hub),
-	}
+	store.hubRepository = NewHubRepository(store)
 
 	return store.hubRepository
 }
