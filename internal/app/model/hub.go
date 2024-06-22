@@ -51,7 +51,7 @@ func (hub *Hub) sendMessageAll(message chat.Message) {
 		if localMessage.ClearPrivacy(cl.User) {
 			cl.SendMessage <- localMessage
 		} else {
-			hub.logger.Warnf("Can't clear websocket priuvacy")
+			hub.logger.Warnf("Can't clear message privacy")
 		}
 	}
 }

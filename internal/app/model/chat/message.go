@@ -29,10 +29,11 @@ func (msg *Message) ClearPrivacy(chatUser *User) bool {
 		// Clear userData
 		var clearUsers = make([]User, 0)
 
-		if value, ok := msg.Message.([]User); !ok {
+		if value, ok := msg.Message.([]*User); !ok {
 			return ok
 		} else {
-			for _, user := range value {
+			for _, userLink := range value {
+				user := *userLink
 				if user.Id != chatUser.Id {
 					user.Id = uuid.Nil
 				}

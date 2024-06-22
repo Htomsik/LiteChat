@@ -79,9 +79,6 @@ export default {
         socketOnMessage:function (evt) {
             let messageObj = JSON.parse(evt.data)
 
-
-            console.log(evt.data)
-
             switch (messageObj.type) {
 
                 case messageType.message:
