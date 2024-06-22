@@ -38,8 +38,8 @@ func TestHubRepository_Add(t *testing.T) {
 
 	st := memoryStore.New()
 
-	hubExists := &model.Hub{Id: idExists}
-	hubUniq := &model.Hub{Id: idUniq}
+	hubExists := model.HewHub(idUniq, logrus.New(), make(chan string))
+	hubUniq := model.HewHub(idExists, logrus.New(), make(chan string))
 
 	st.Hub().Add(hubExists)
 
@@ -60,8 +60,8 @@ func TestHubRepository_Remove(t *testing.T) {
 
 	st := memoryStore.New()
 
-	hubExists := &model.Hub{Id: idExists}
-	hubNotExists := &model.Hub{Id: idNotExists}
+	hubExists := model.HewHub(idExists, logrus.New(), make(chan string))
+	hubNotExists := model.HewHub(idNotExists, logrus.New(), make(chan string))
 
 	st.Hub().Add(hubExists)
 
@@ -83,10 +83,10 @@ func TestHubRepository_Find(t *testing.T) {
 
 	st := memoryStore.New()
 
-	addedHub := &model.Hub{Id: idAdded}
+	addedHub := model.HewHub(idAdded, logrus.New(), make(chan string))
 	st.Hub().Add(addedHub)
 
-	removedHub := &model.Hub{Id: idRemoved}
+	removedHub := model.HewHub(idRemoved, logrus.New(), make(chan string))
 	st.Hub().Add(removedHub)
 	st.Hub().Remove(removedHub.Id)
 
