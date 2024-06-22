@@ -1,7 +1,6 @@
 package Server
 
 import (
-	"Chat/internal/app/model"
 	"Chat/internal/app/model/chat"
 	"Chat/internal/app/model/constants"
 	client "Chat/internal/app/model/websocket"
@@ -96,9 +95,7 @@ func (srv *server) handleChat() http.HandlerFunc {
 
 		// is no exists create new
 		if hub == nil {
-			hub = model.HewHub(hubId, srv.logger)
-
-			err = srv.store.Hub().Add(hub)
+			hub, err = srv.store.Hub().Create(hubId)
 			if err != nil {
 				srv.respond(w, r, http.StatusInternalServerError, nil)
 			}

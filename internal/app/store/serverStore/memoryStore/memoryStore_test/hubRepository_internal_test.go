@@ -3,9 +3,32 @@ package memoryStore_test
 import (
 	"Chat/internal/app/model"
 	"Chat/internal/app/store/serverStore/memoryStore"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
+
+// TestHubRepository_Create create exists and not exists hub
+func TestHubRepository_Create(t *testing.T) {
+	// Arrange
+	idUniq := "new"
+	idExists := "exists"
+
+	st := memoryStore.New()
+
+	st.Hub().Create(idExists)
+
+	// Act
+	hubUniq, errUniq := st.Hub().Create(idUniq)
+	hubExists, errExists := st.Hub().Create(idExists)
+
+	// Assert
+	assert.NotNil(t, hubUniq)
+	assert.NoError(t, errUniq)
+
+	assert.Nil(t, hubExists)
+	assert.Error(t, errExists)
+}
 
 // TestHubRepository_Add add exists and not exists hub
 func TestHubRepository_Add(t *testing.T) {
