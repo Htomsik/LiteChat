@@ -9,7 +9,8 @@ import (
 type User struct {
 	Id           uuid.UUID `json:"Id"`
 	Name         string    `json:"Name"`
-	DateTime     time.Time `json:"DateTime"`
+	Role         string    `json:"Role"`
+	DateTime     time.Time `json:"DateTime"` // Connection time
 	originalName string
 }
 

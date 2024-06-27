@@ -5,26 +5,73 @@ import (
 	"Chat/internal/app/model/websocket"
 	"Chat/internal/app/store/hubStore"
 	"Chat/internal/app/store/hubStore/memoryStore"
+	"flag"
+	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 )
+
+var (
+	hubCfgPath string
+)
+
+func init() {
+	flag.StringVar(&hubCfgPath, "HubConfig-path", "configs/chatConfig.toml", "path to cfg file")
+}
 
 type Hub struct {
 	Id         string
 	store      hubStore.HubStore
+	admin      *websocket.Client
 	messages   []chat.Message
 	Commands   *websocket.Retranslator
 	logger     *logrus.Logger
+	config     *HubConfig
 	hubDeleted chan string
+}
+
+// SetAdmin change admin
+func (hub *Hub) SetAdmin(client *websocket.Client) {
+	// Delete old admin
+	if hub.admin != nil {
+		hub.admin.User.Role = hub.config.DefaultRole.Name
+	}
+
+	// Set new admin
+	client.User.Role = hub.config.AdminRole.Name
+	hub.admin = client
+}
+
+// userListChanged send all clients new userlist
+func (hub *Hub) userListChanged() {
+
+	users, err := hub.store.Client().AllUsers()
+	if err != nil {
+		hub.logger.Error(err)
+	}
+	msgAll := chat.NewSystemMessage(chat.TypeUsersList, users)
+	hub.sendMessageAll(msgAll)
 }
 
 // HewHub create new hub
 func HewHub(id string, logger *logrus.Logger, hubDeleted chan string) *Hub {
+
+	cfg := NewHubConfig()
+	if _, err := toml.DecodeFile(hubCfgPath, cfg); err != nil {
+		logger.Fatal(err)
+		return nil
+	}
+
+	// if admin change def/adm role it allow not lose roles
+	cfg.Roles = append(cfg.Roles, cfg.AdminRole)
+	cfg.Roles = append(cfg.Roles, cfg.DefaultRole)
+
 	return &Hub{
 		Id:         id,
 		store:      memoryStore.New(),
 		messages:   make([]chat.Message, 0),
 		Commands:   websocket.NewCommands(logger),
 		logger:     logger,
+		config:     cfg,
 		hubDeleted: hubDeleted,
 	}
 }
@@ -75,6 +122,12 @@ func (hub *Hub) sendMessageAll(message chat.Message) {
 
 // clientConnected operations when websocket connecting first time
 func (hub *Hub) clientConnected(client *websocket.Client) {
+	// Change role if he not admin
+	if client.User.Role != hub.config.AdminRole.Name {
+		client.User.Role = hub.config.DefaultRole.Name
+	}
+
+	// Send him all messages
 	for _, message := range hub.messages {
 		client.SendMessage <- message
 	}
@@ -87,10 +140,9 @@ func (hub *Hub) Run() {
 
 		// Client connect
 		case client := <-hub.Commands.Register:
+
 			originName := client.User.OriginalName()
-
 			newName, err := hub.store.Client().Add(client)
-
 			if err != nil {
 				hub.logger.Error(err)
 				continue
@@ -102,39 +154,34 @@ func (hub *Hub) Run() {
 			}
 
 			hub.clientConnected(client)
-
-			// Send message about connected
-			users, err := hub.store.Client().AllUsers()
-			if err != nil {
-				hub.logger.Error(err)
-				continue
-			}
-			msgAll := chat.NewSystemMessage(chat.TypeUsersList, users)
-			hub.sendMessageAll(msgAll)
+			hub.userListChanged()
 
 		// Client disconnect
 		case client := <-hub.Commands.Unregister:
+
+			// Change admin on first connected if admin is disconnected
+			if client.User.Role == hub.config.AdminRole.Name {
+				newAdmin, err := hub.store.Client().FirstConnected(client.User.Id)
+				if err != nil {
+					hub.logger.Error(err)
+					continue
+				}
+				hub.SetAdmin(newAdmin)
+			}
 
 			err := hub.store.Client().Remove(client.User.Id)
 			if err != nil {
 				hub.logger.Error(err)
 				continue
 			}
+			hub.userListChanged()
 
-			// Send message about disconnected
-			users, err := hub.store.Client().AllUsers()
-			if err != nil {
-				hub.logger.Error(err)
-				continue
-			}
-			msg := chat.NewSystemMessage(chat.TypeUsersList, users)
-			hub.sendMessageAll(msg)
-
-			// Delete hub if zero clients
 			clients, err := hub.store.Client().All()
 			if err != nil {
 				hub.logger.Error(err)
 			}
+
+			// Delete hub if zero clients
 			if len(clients) == 0 {
 				hub.hubDeleted <- hub.Id
 			}
