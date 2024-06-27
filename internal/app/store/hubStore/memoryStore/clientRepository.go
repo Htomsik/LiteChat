@@ -48,6 +48,31 @@ func (repository *ClientRepository) Find(id uuid.UUID) (*websocket.Client, error
 	return nil, constants.ErrorRecordNotFound
 }
 
+// FirstConnected first connected user
+func (repository *ClientRepository) FirstConnected(excludedGuid uuid.UUID) (*websocket.Client, error) {
+
+	clients, err := repository.All()
+	if err != nil {
+		return nil, err
+	}
+
+	var minClient *websocket.Client
+	for _, client := range clients {
+
+		if client.User.Id == excludedGuid {
+			continue
+		}
+		if minClient == nil {
+			minClient = client
+		}
+		if client.User.DateTime.Before(minClient.User.DateTime) {
+			minClient = client
+		}
+	}
+
+	return minClient, nil
+}
+
 // CountByOriginalName count clients
 func (repository *ClientRepository) CountByOriginalName(originalName string) (int, error) {
 	clients := repository.GetClientsOriginalName()

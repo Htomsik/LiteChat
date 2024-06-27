@@ -94,12 +94,13 @@ func (srv *server) handleChat() http.HandlerFunc {
 		}
 
 		// is no exists create new
+		newHub := false
 		if hub == nil {
 			hub, err = srv.store.Hub().Create(hubId)
 			if err != nil {
 				srv.respond(w, r, http.StatusInternalServerError, nil)
 			}
-
+			newHub = true
 			go hub.Run()
 		}
 
@@ -119,6 +120,11 @@ func (srv *server) handleChat() http.HandlerFunc {
 
 		client := client.NewClient(hub.Commands, connection, user)
 		client.RegisterToHub()
+
+		// if hub is new first person is admin
+		if newHub {
+			hub.SetAdmin(client)
+		}
 
 		go client.WriteToHub()
 		go client.ReadFromHub()

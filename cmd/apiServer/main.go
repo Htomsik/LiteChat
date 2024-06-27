@@ -12,7 +12,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&cfgPath, "config-path", "configs/apiServer.toml", "path to cfg file")
+	flag.StringVar(&cfgPath, "config-path", "configs/apiConfig.toml", "path to cfg file")
 }
 
 // @ title 			Simple site go
