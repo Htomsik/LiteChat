@@ -42,8 +42,9 @@ func (repository *HubRepository) Run() {
 }
 
 // Create new hub and place in repository
-func (repository *HubRepository) Create(hubId string) (*model.Hub, error) {
-	newHub := model.HewHub(hubId, repository.logger, repository.hubDeleted)
+func (repository *HubRepository) Create(hubId string, cfg *model.HubConfig) (*model.Hub, error) {
+
+	newHub := model.HewHub(hubId, repository.logger, repository.hubDeleted, cfg)
 
 	err := repository.Add(newHub)
 
