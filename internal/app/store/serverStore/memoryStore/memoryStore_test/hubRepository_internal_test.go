@@ -2,11 +2,46 @@ package memoryStore_test
 
 import (
 	"Chat/internal/app/model"
+	"Chat/internal/app/model/chat"
 	"Chat/internal/app/store/serverStore/memoryStore"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
+
+var (
+	hubCfg = &model.HubConfig{
+
+		AdminRole: &chat.UserRole{
+			Name:    "Admin",
+			IsAdmin: true,
+		},
+
+		DefaultRole: &chat.UserRole{
+			Name:        "User",
+			IsAdmin:     false,
+			Permissions: []chat.RolePermission{0},
+		},
+
+		Roles: nil,
+	}
+)
+
+// TestMain Test Startup
+func TestMain(m *testing.M) {
+
+	// init roles
+	if hubCfg.Roles == nil {
+		hubCfg.Roles = []*chat.UserRole{}
+		hubCfg.Roles = append(hubCfg.Roles, hubCfg.DefaultRole)
+		hubCfg.Roles = append(hubCfg.Roles, hubCfg.AdminRole)
+	}
+
+	// Exit from tests
+	exitVal := m.Run()
+	os.Exit(exitVal)
+}
 
 // TestHubRepository_Create create exists and not exists hub
 func TestHubRepository_Create(t *testing.T) {
@@ -16,11 +51,11 @@ func TestHubRepository_Create(t *testing.T) {
 
 	st := memoryStore.New()
 
-	st.Hub().Create(idExists)
+	st.Hub().Create(idExists, hubCfg)
 
 	// Act
-	hubUniq, errUniq := st.Hub().Create(idUniq)
-	hubExists, errExists := st.Hub().Create(idExists)
+	hubUniq, errUniq := st.Hub().Create(idUniq, hubCfg)
+	hubExists, errExists := st.Hub().Create(idExists, hubCfg)
 
 	// Assert
 	assert.NotNil(t, hubUniq)
@@ -38,8 +73,8 @@ func TestHubRepository_Add(t *testing.T) {
 
 	st := memoryStore.New()
 
-	hubExists := model.HewHub(idUniq, logrus.New(), make(chan string))
-	hubUniq := model.HewHub(idExists, logrus.New(), make(chan string))
+	hubExists := model.HewHub(idUniq, logrus.New(), make(chan string), hubCfg)
+	hubUniq := model.HewHub(idExists, logrus.New(), make(chan string), hubCfg)
 
 	st.Hub().Add(hubExists)
 
@@ -60,8 +95,8 @@ func TestHubRepository_Remove(t *testing.T) {
 
 	st := memoryStore.New()
 
-	hubExists := model.HewHub(idExists, logrus.New(), make(chan string))
-	hubNotExists := model.HewHub(idNotExists, logrus.New(), make(chan string))
+	hubExists := model.HewHub(idExists, logrus.New(), make(chan string), hubCfg)
+	hubNotExists := model.HewHub(idNotExists, logrus.New(), make(chan string), hubCfg)
 
 	st.Hub().Add(hubExists)
 
@@ -83,10 +118,10 @@ func TestHubRepository_Find(t *testing.T) {
 
 	st := memoryStore.New()
 
-	addedHub := model.HewHub(idAdded, logrus.New(), make(chan string))
+	addedHub := model.HewHub(idAdded, logrus.New(), make(chan string), hubCfg)
 	st.Hub().Add(addedHub)
 
-	removedHub := model.HewHub(idRemoved, logrus.New(), make(chan string))
+	removedHub := model.HewHub(idRemoved, logrus.New(), make(chan string), hubCfg)
 	st.Hub().Add(removedHub)
 	st.Hub().Remove(removedHub.Id)
 

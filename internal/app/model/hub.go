@@ -6,16 +6,15 @@ import (
 	"Chat/internal/app/store/hubStore"
 	"Chat/internal/app/store/hubStore/memoryStore"
 	"flag"
-	"github.com/BurntSushi/toml"
 	"github.com/sirupsen/logrus"
 )
 
 var (
-	hubCfgPath string
+	HubCfgPath string
 )
 
 func init() {
-	flag.StringVar(&hubCfgPath, "HubConfig-path", "configs/chatConfig.toml", "path to cfg file")
+	flag.StringVar(&HubCfgPath, "HubConfig-path", "configs/chatConfig.toml", "path to cfg file")
 }
 
 type Hub struct {
@@ -53,11 +52,11 @@ func (hub *Hub) userListChanged() {
 }
 
 // HewHub create new hub
-func HewHub(id string, logger *logrus.Logger, hubDeleted chan string) *Hub {
+func HewHub(id string, logger *logrus.Logger, hubDeleted chan string, cfg *HubConfig) *Hub {
 
-	cfg := NewHubConfig()
-	if _, err := toml.DecodeFile(hubCfgPath, cfg); err != nil {
-		logger.Fatal(err)
+	// Without cfg hub work with errors
+	if cfg == nil {
+		logger.Fatal("Hub Config is nil")
 		return nil
 	}
 
@@ -174,7 +173,7 @@ func (hub *Hub) Run() {
 				hub.logger.Error(err)
 				continue
 			}
-			
+
 			// Change admin on first connected if admin is disconnected
 			if client.User.Role == hub.config.AdminRole.Name && len(clients) >= 1 {
 				newAdmin, err := hub.store.Client().FirstConnected(client.User.Id)

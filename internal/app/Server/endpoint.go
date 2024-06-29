@@ -1,10 +1,12 @@
 package Server
 
 import (
+	"Chat/internal/app/model"
 	"Chat/internal/app/model/chat"
 	"Chat/internal/app/model/constants"
 	client "Chat/internal/app/model/websocket"
 	"errors"
+	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -95,9 +97,19 @@ func (srv *server) handleChat() http.HandlerFunc {
 
 		// is no exists create new
 		if hub == nil {
-			hub, err = srv.store.Hub().Create(hubId)
+
+			// TODO idk where right get cfg from file
+			// TODO maybe cache cfg and get new when old file changed
+			cfg := model.NewHubConfig()
+			if _, err = toml.DecodeFile(model.HubCfgPath, cfg); err != nil {
+				srv.respond(w, r, http.StatusInternalServerError, nil)
+				return
+			}
+
+			hub, err = srv.store.Hub().Create(hubId, cfg)
 			if err != nil {
 				srv.respond(w, r, http.StatusInternalServerError, nil)
+				return
 			}
 			go hub.Run()
 		}
