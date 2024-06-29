@@ -23,7 +23,8 @@ export default {
             chatSocket: null,
 
             users:[
-
+                // {Name: "Jake", Role: "Admin"},
+                // {Name: "Jess", Role: "User"},
             ],
 
             messages: [],
@@ -98,9 +99,6 @@ export default {
                         user.Color = this.getRandomHexColorByUserName(user.Name)
                     }
                     this.users = messageObj.message
-                    console.log(messageObj.message)
-                    this.usersToMapRoleUsers(this.users)
-
                     break;
 
                 case messageType.UserNameChanged:
@@ -118,21 +116,21 @@ export default {
         },
 
         /// Users to Role - Users[]
-        usersToMapRoleUsers: function (users){
-
-            let roleUsersMap = new Map()
+        usersToRoleUsers: function (users){
+            let roleUsers = new Map();
 
             for(let i = 0; i < users.length; i++){
-                let user = users[i];
+                let user = users[i]
 
-                if (!roleUsersMap.has(user.Role)){
-                    roleUsersMap.set(user.Role, [user])
+                if (!roleUsers.has(user.Role)){
+                    roleUsers.set(user.Role, [])
                 }
 
-                roleUsersMap.set(user.Role,roleUsersMap.get(user.Role).push(user))
+                let usersPerRole = roleUsers.get(user.Role)
+                usersPerRole.push(user)
             }
 
-            console.log(roleUsersMap)
+            return roleUsers
         },
 
         getRandomHexColorByUserName: function (username){
@@ -175,17 +173,22 @@ export default {
 
           <!--    Users   -->
           <div class="colContainer overflow-auto" style=" flex-grow: 1">
-                <div class="userList-user rowContainer" v-for="user in users" >
-                    
-                    <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
-                        {{user.Name[0]}} 
+                <div v-for="[role, users] in usersToRoleUsers(users)">
+                    <div class="userList-Role">
+                        {{role}}
                     </div>
-                    
-                    <div>
-                        {{user.Name}} 
-                    </div>
-                    
+
+                    <div class="rowContainer userList-usersContainer" v-for="user in users" >
+                        <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
+                            {{user.Name[0]}} 
+                        </div>
+                        
+                        <div class="userList-user">
+                            {{user.Name}} 
+                        </div>
+                    </div> 
                 </div>
+               
           </div>
 
           <!--    Additional button -->
