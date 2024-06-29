@@ -1,4 +1,3 @@
-
 const messageType = Object.freeze({
     message:   "Message",
     userList:   "UsersList", // Receiving array of chat users
@@ -6,6 +5,11 @@ const messageType = Object.freeze({
 });
 
 
+// TODO
+// По нормальному разделить монокомпонента на
+// 1. Блок показа пользователей
+// 2. Блок отправки сообщений
+// 3. Всплывающую панель информации о выбранном пользователе
 export default {
 
     emits: ['disconnect','alert'],
@@ -17,9 +21,11 @@ export default {
             serverId: "",
 
             chatSocket: null,
+
             users:[
 
             ],
+
             messages: [],
             currentMessage: "",
         }
@@ -92,6 +98,9 @@ export default {
                         user.Color = this.getRandomHexColorByUserName(user.Name)
                     }
                     this.users = messageObj.message
+                    console.log(messageObj.message)
+                    this.usersToMapRoleUsers(this.users)
+
                     break;
 
                 case messageType.UserNameChanged:
@@ -106,6 +115,24 @@ export default {
             const minutes = dateTime.getMinutes();
 
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
+        },
+
+        /// Users to Role - Users[]
+        usersToMapRoleUsers: function (users){
+
+            let roleUsersMap = new Map()
+
+            for(let i = 0; i < users.length; i++){
+                let user = users[i];
+
+                if (!roleUsersMap.has(user.Role)){
+                    roleUsersMap.set(user.Role, [user])
+                }
+
+                roleUsersMap.set(user.Role,roleUsersMap.get(user.Role).push(user))
+            }
+
+            console.log(roleUsersMap)
         },
 
         getRandomHexColorByUserName: function (username){
@@ -149,11 +176,15 @@ export default {
           <!--    Users   -->
           <div class="colContainer overflow-auto" style=" flex-grow: 1">
                 <div class="userList-user rowContainer" v-for="user in users" >
-                <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
-                {{user.Name[0]}} 
-                </div>
-                
-                 {{user.Name}} 
+                    
+                    <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
+                        {{user.Name[0]}} 
+                    </div>
+                    
+                    <div>
+                        {{user.Name}} 
+                    </div>
+                    
                 </div>
           </div>
 

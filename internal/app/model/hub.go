@@ -31,9 +31,9 @@ type Hub struct {
 
 // SetAdmin change admin
 func (hub *Hub) SetAdmin(client *websocket.Client) {
-	// Delete old admin
-	if hub.admin != nil {
-		hub.admin.User.Role = hub.config.DefaultRole.Name
+	if client == nil {
+		hub.logger.Error("New Admin is nil")
+		return
 	}
 
 	// Set new admin
@@ -122,8 +122,12 @@ func (hub *Hub) sendMessageAll(message chat.Message) {
 
 // clientConnected operations when websocket connecting first time
 func (hub *Hub) clientConnected(client *websocket.Client) {
-	// Change role if he not admin
-	if client.User.Role != hub.config.AdminRole.Name {
+
+	// If Admin is nil that means what its new hub
+	if hub.admin == nil {
+		hub.SetAdmin(client)
+		return
+	} else {
 		client.User.Role = hub.config.DefaultRole.Name
 	}
 
@@ -159,8 +163,20 @@ func (hub *Hub) Run() {
 		// Client disconnect
 		case client := <-hub.Commands.Unregister:
 
+			clients, err := hub.store.Client().All()
+			if err != nil {
+				hub.logger.Error(err)
+			}
+
+			// Remove client from storage
+			err = hub.store.Client().Remove(client.User.Id)
+			if err != nil {
+				hub.logger.Error(err)
+				continue
+			}
+			
 			// Change admin on first connected if admin is disconnected
-			if client.User.Role == hub.config.AdminRole.Name {
+			if client.User.Role == hub.config.AdminRole.Name && len(clients) >= 1 {
 				newAdmin, err := hub.store.Client().FirstConnected(client.User.Id)
 				if err != nil {
 					hub.logger.Error(err)
@@ -169,22 +185,12 @@ func (hub *Hub) Run() {
 				hub.SetAdmin(newAdmin)
 			}
 
-			err := hub.store.Client().Remove(client.User.Id)
-			if err != nil {
-				hub.logger.Error(err)
-				continue
-			}
-			hub.userListChanged()
-
-			clients, err := hub.store.Client().All()
-			if err != nil {
-				hub.logger.Error(err)
-			}
-
 			// Delete hub if zero clients
 			if len(clients) == 0 {
 				hub.hubDeleted <- hub.Id
 			}
+
+			hub.userListChanged()
 
 		// Retranslate to other clients
 		case message, _ := <-hub.Commands.Message:
