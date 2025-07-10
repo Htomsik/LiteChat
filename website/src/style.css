@@ -6,7 +6,6 @@ body,html{
     height: 100%;
 }
 
-
 .alert{
     position: absolute;
     top: 5%;
@@ -53,7 +52,6 @@ body,html{
     height: 90%;
     padding: 10px;
 }
-
 
 .userList-usersContainer{
     margin-left: 10px;

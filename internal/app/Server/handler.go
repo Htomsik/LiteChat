@@ -3,6 +3,7 @@ package Server
 import (
 	_ "Chat/docs"
 	"Chat/internal/app/model"
+
 	_ "github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -37,7 +38,7 @@ func (srv *server) configureChatRouter() {
 func (srv *server) configurePageEndpoint() {
 
 	websiteHandler := model.SpaHandler{
-		StaticPath: "website",
+		StaticPath: "website/dist",
 		IndexPath:  "index.html",
 	}
 

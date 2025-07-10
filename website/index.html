@@ -1,96 +1,18 @@
-<!doctype html>
-<html lang="en" data-bs-theme="dark" xmlns:v-on="http://www.w3.org/1999/xhtml">
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LiteChat</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-            crossorigin="anonymous"></script>
-    <link href=" https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css " rel="stylesheet">
-
-    <link rel="stylesheet" href="mainStyle.css">
-
-    <title>Demo</title>
-</head>
-<body>
-
-<div id="app"  class="full">
-    <div v-if="showErrorAlert" id="#alert" class="marginAll alert alert-danger alert-dismissible fade show"
-         role="alert">
-        <strong> {{ errorAlert }} </strong>
-        <button type="button" v-on:click="closeAlert" class="btn-close" aria-label="Close"></button>
-    </div>
-
-    <login @alert="openAlert" @connect="connectToChat" v-bind:user-name-prop="userName" v-bind:server-id-prop="serverId"    v-if="!isConnected"></login>
-    <chat @alert="openAlert" @disconnect="disconnectFromChat" v-bind:user-name-prop="userName" v-bind:server-id-prop="serverId" v-if="isConnected"></chat>
-</div>
-
-
-<!--Vue-->
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
-
-<!--Axios-->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-
-
-<!--    APP -->
-<script type="module">
-    import LoginPage from "./Pages/LoginPage.js";
-    import ChatPage from "./Pages/ChatPage.js";
-
-    Vue.component('Login', LoginPage)
-    Vue.component('Chat', ChatPage)
-
-    new Vue({
-        el: '#app',
-        data: {
-            isConnected: false,
-
-            userName : "",
-            serverId : "",
-
-            errorAlert: "",
-            showErrorAlert: false,
-        },
-        methods: {
-
-            openAlert: function (message) {
-                this.closeAlert()
-                this.showErrorAlert = true
-                this.errorAlert = message;
-            },
-
-            closeAlert: function () {
-                this.showErrorAlert = false
-                this.errorAlert = "";
-            },
-
-            connectToChat: function (userName, serverId){
-                this.userName = userName
-                this.serverId = serverId
-
-                this.closeAlert()
-                this.isConnected = true;
-            },
-
-            disconnectFromChat: function (userName, serverId){
-                this.userName = userName
-                this.serverId = serverId
-
-                this.isConnected = false;
-            }
-        },
-    })
-
-
-</script>
-
-</body>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
