@@ -9,12 +9,12 @@
             <form id="ConnectInfo" :class="formClass" @submit.prevent>
               <div>
                 <div class="form-floating mb-3">
-                  <input maxlength="128" minlength="1" id="serverInput" type="text" class="form-control" v-model="serverId"
+                  <input maxlength="128" minlength="1" id="serverInput" type="text" class="form-control" v-model="appSettings.serverId"
                          placeholder="" required>
                   <label for="serverInput">Server</label>
                 </div>
                 <div class="form-floating mb-3">
-                  <input id="userNameInput" type="text" class="form-control" v-model="userName"
+                  <input id="userNameInput" type="text" class="form-control" v-model="appSettings.userName"
                          maxlength="20" minlength="2" placeholder="" required>
                   <label for="userNameInput">Username</label>
                 </div>
@@ -34,29 +34,21 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import axios from 'axios'
 
-const props = defineProps({
-  userNameProp: String,
-  serverIdProp: String
-})
-const emit = defineEmits(['connect', 'alert'])
+import {AppSettingsStore} from "../stores/appSettingsStore.js";
+const appSettings = AppSettingsStore()
 
-const userName = ref('')
-const serverId = ref('')
+const emit = defineEmits(['connect', 'alert'])
 const formClass = ref('needs-validation')
 
-onMounted(() => {
-  userName.value = props.userNameProp || ''
-  serverId.value = props.serverIdProp || ''
-})
 
 const blockConnection = computed(() =>
-  userName.value.trim().length < 2 || serverId.value.trim().length === 0
+    appSettings.userName.toString().trim().length < 2 || appSettings.userName.toString().trim().length === 0
 )
 
-watch([userName, serverId], () => {
+watch([appSettings.userName, appSettings.serverId], () => {
   formClass.value = 'was-validated'
 })
 
@@ -83,7 +75,7 @@ async function checkApiIsAlive() {
 }
 
 async function tryConnect() {
-  let url = `/api/chat/canConnect/${serverId.value}?User=${userName.value}`
+  let url = `/api/chat/canConnect/${appSettings.serverId}?User=${appSettings.userName}`
   if (!await checkApiIsAlive()) {
     emit('alert', 'Connection to server failed')
     return
@@ -91,7 +83,7 @@ async function tryConnect() {
   try {
     const response = await axios.get(url)
     if (response.status === 200) {
-      emit('connect', userName.value, serverId.value)
+      appSettings.connectToChat()
     }
   } catch (error) {
     handleAxiosErrors(error)
