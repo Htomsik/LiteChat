@@ -1,11 +1,16 @@
 <script setup>
 import { ref } from 'vue'
-import LoginPage from './components/LoginPage.vue'
-import ChatPage from './components/ChatPage.vue'
+import 'vue-router'
+import 'pinia'
 
-const isConnected = ref(false)
-const userName = ref('')
-const serverId = ref('')
+import LoginView from './components/LoginView.vue'
+import ChatView from './components/ChatView.vue'
+
+import {AppSettingsStore} from "./stores/appSettingsStore.js";
+
+
+const appSettingsStore = AppSettingsStore()
+
 const errorAlert = ref('')
 const showErrorAlert = ref(false)
 
@@ -19,29 +24,18 @@ function closeAlert() {
   showErrorAlert.value = false
   errorAlert.value = ''
 }
-
-function connectToChat(name, id) {
-  userName.value = name
-  serverId.value = id
-  closeAlert()
-  isConnected.value = true
-}
-
-function disconnectFromChat(name, id) {
-  userName.value = name
-  serverId.value = id
-  isConnected.value = false
-}
 </script>
 
 <template>
   <div id="app" class="full">
+
     <div v-if="showErrorAlert" id="alert" class="marginAll alert alert-danger alert-dismissible fade show" role="alert">
       <strong>{{ errorAlert }}</strong>
       <button type="button" @click="closeAlert" class="btn-close" aria-label="Close"></button>
     </div>
-    <LoginPage v-if="!isConnected" @alert="openAlert" @connect="connectToChat" :userNameProp="userName" :serverIdProp="serverId" />
-    <ChatPage v-if="isConnected" @alert="openAlert" @disconnect="disconnectFromChat" :userNameProp="userName" :serverIdProp="serverId" />
+
+    <LoginView v-if="!appSettingsStore.isConnected" @alert="openAlert"/>
+    <ChatView v-if="appSettingsStore.isConnected" @alert="openAlert"/>
   </div>
 </template>
 

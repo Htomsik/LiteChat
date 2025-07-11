@@ -1,11 +1,14 @@
 <template>
   <div class="centerContainer rowContainer full">
+
     <!-- Chat info -->
     <div class="card chatContainer" style="width: 200px">
+
       <div class="colContainer" style="flex-shrink: 0;text-align: center">
-        {{ serverId }}
+        {{ appSettings.serverId }}
         <div style="border: 1px solid #6c757d; border-radius: 5px"></div>
       </div>
+
       <div class="colContainer overflow-auto" style=" flex-grow: 1">
         <div v-for="[role, users] in usersToRoleUsers(users)" :key="role">
           <div class="userList-Role">
@@ -21,15 +24,18 @@
           </div>
         </div>
       </div>
+
       <div class="rowContainer" style="flex-shrink: 0">
         <button @click="disconnect" id="disconnectButton" style="width: 100%" class="btn btn-secondary" type="button">Disconnect</button>
       </div>
+
     </div>
+
     <!-- messages -->
     <div style="flex-grow: 1" class="card chatContainer">
       <div style="display: flex; flex-direction: column; height: 100%">
         <div style="flex-grow: 1" class="overflow-auto">
-          <div v-for="item in messages" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === userName }" class="test">
+          <div v-for="item in messages" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === appSettings.userName }" class="test">
             <div class="message bg-secondary">
               <span class="message-user">{{ item.user }}</span>
               <div class="message-text">
@@ -47,22 +53,23 @@
             <i class="bi bi-send-fill"></i>
           </button>
         </div>
-      </div>
+        </div>
     </div>
   </div>
+
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import {AppSettingsStore} from "../stores/appSettingsStore.js";
+const appSettings = AppSettingsStore()
 
-const props = defineProps({
-  userNameProp: String,
-  serverIdProp: String
+const emit = defineEmits(['alert'])
+
+onMounted(() => {
+  connect()
 })
-const emit = defineEmits(['disconnect', 'alert'])
 
-const userName = ref('')
-const serverId = ref('')
 const chatSocket = ref(null)
 const users = ref([])
 const messages = ref([])
@@ -72,12 +79,6 @@ const messageType = Object.freeze({
   message: 'Message',
   userList: 'UsersList',
   UserNameChanged: 'UserNameChanged',
-})
-
-onMounted(() => {
-  userName.value = props.userNameProp
-  serverId.value = props.serverIdProp
-  connect()
 })
 
 const blockSendMessage = computed(() => currentMessage.value.length === 0)
@@ -94,12 +95,17 @@ function disconnect() {
     chatSocket.value.close()
   }
   emit('alert', 'You have been disconnected')
-  emit('disconnect', userName.value, serverId.value)
+  appSettings.disconnectFromChat()
 }
 
 function connect() {
-  if (chatSocket.value) chatSocket.value.close()
-  let url = `/api/chat/${serverId.value}?User=${userName.value}`
+  if (chatSocket.value)
+      chatSocket.value.close()
+
+  console.log(appSettings.userName)
+
+  let url = `/api/chat/${appSettings.serverId}?User=${appSettings.userName}`
+
   chatSocket.value = new WebSocket(url)
   chatSocket.value.onopen = socketOnOpen
   chatSocket.value.onclose = socketOnClose
@@ -125,7 +131,7 @@ function socketOnMessage(evt) {
       users.value = messageObj.message
       break
     case messageType.UserNameChanged:
-      userName.value = messageObj.message
+      appSettings.userName = messageObj.message
       break
   }
 }
