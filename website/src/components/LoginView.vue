@@ -4,7 +4,7 @@
     <div class="centerContainer full">
       <div class="colContainer">
         <div class="centerContainer marginAll">
-          <div class="card text-center">
+          <div class="cardSC text-center">
             <h1 style="font-weight: bold;">LiteChat</h1>
             <form id="ConnectInfo" :class="formClass" @submit.prevent>
               <div>

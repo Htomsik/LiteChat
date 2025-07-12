@@ -2,11 +2,11 @@
   <div class="centerContainer rowContainer full">
 
     <!-- Chat info -->
-    <div class="card chatContainer" style="width: 200px">
+    <div class="cardSC chatContainer" style="width: 200px">
 
       <div class="colContainer" style="flex-shrink: 0;text-align: center">
-        {{ appSettings.serverId }}
-        <div style="border: 1px solid #6c757d; border-radius: 5px"></div>
+        <h4 style="font-weight: bold;">{{appSettings.serverId}}</h4>
+        <div style="border: 1px solid var(--bs-border-color); border-radius: 5px"></div>
       </div>
 
       <div class="colContainer overflow-auto" style=" flex-grow: 1">
@@ -14,6 +14,7 @@
           <div class="userList-Role">
             {{ role }}
           </div>
+
           <div class="rowContainer userList-usersContainer" v-for="user in users" :key="user.Id">
             <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
               {{ user.Name[0] }}
@@ -21,40 +22,47 @@
             <div class="userList-user">
               {{ user.Name }}
             </div>
+
           </div>
         </div>
       </div>
 
       <div class="rowContainer" style="flex-shrink: 0">
-        <button @click="ChatService.Disconnect" id="disconnectButton" style="width: 100%" class="btn btn-secondary" type="button">Disconnect</button>
+        <button @click="ChatService.Disconnect" id="disconnectButton" style="width: 100%" class="btn btn-primary" type="button">Disconnect</button>
       </div>
 
     </div>
 
     <!-- messages -->
-    <div style="flex-grow: 1" class="card chatContainer">
+    <div style="flex-grow: 1" class="cardSC chatContainer">
+
       <div style="display: flex; flex-direction: column; height: 100%">
         <div style="flex-grow: 1" class="overflow-auto">
+
           <div v-for="item in ChatService.Messages.value" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === appSettings.userName }" class="test">
-            <div class="message bg-secondary">
+
+            <div class="message">
               <span class="message-user">{{ item.user }}</span>
               <div class="message-text">
                 {{ item.message }}
               </div>
               <span class="message-dateTime">{{ formatMessageDateTime(item.dateTime) }}</span>
             </div>
+
           </div>
+
         </div>
         <div class="rowContainer centerContainer">
           <textarea maxlength="256" v-model="currentMessage" class="marginAll"
                     style="flex-grow: 1; height: 35px; max-height: 70px; min-height: 35px"></textarea>
           <button :disabled="blockSendMessage" @click="sendMessage" type="button"
-                  class="btn btn-secondary">
+                  class="btn btn-primary">
             <i class="bi bi-send-fill"></i>
           </button>
         </div>
         </div>
     </div>
+
   </div>
 
 </template>

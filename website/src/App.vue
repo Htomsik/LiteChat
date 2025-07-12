@@ -21,9 +21,8 @@ const emit = defineEmits([''])
 <template>
   <div id="app" class="full">
 
-    <div v-if="alertStore.show" id="alert" class="marginAll alert alert-danger alert-dismissible fade show" role="alert">
+    <div v-if="alertStore.show" id="alert" class="alert alert-danger alert-dismissible fade show" role="alert" @click="alertStore.close()" >
       <strong>{{ alertStore.message }}</strong>
-      <button type="button" @click="alertStore.close()" class="btn-close" aria-label="Close"></button>
     </div>
 
     <RouterView />
