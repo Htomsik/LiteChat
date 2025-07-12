@@ -1,19 +1,20 @@
 <script setup>
+// imports
 import { ref } from 'vue'
-import 'vue-router'
 import 'pinia'
 
-import LoginView from './components/LoginView.vue'
-import ChatView from './components/ChatView.vue'
+// store, router
+// emits
+// store + routers
 
-import {AppSettingsStore} from "./stores/appSettingsStore.js";
-
-
-const appSettingsStore = AppSettingsStore()
-
+// ref, computed
 const errorAlert = ref('')
 const showErrorAlert = ref(false)
 
+// watch
+// live cycle
+
+// functions
 function openAlert(message) {
   closeAlert()
   showErrorAlert.value = true
@@ -34,8 +35,8 @@ function closeAlert() {
       <button type="button" @click="closeAlert" class="btn-close" aria-label="Close"></button>
     </div>
 
-    <LoginView v-if="!appSettingsStore.isConnected" @alert="openAlert"/>
-    <ChatView v-if="appSettingsStore.isConnected" @alert="openAlert"/>
+    <RouterView />
+
   </div>
 </template>
 
