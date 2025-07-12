@@ -1,12 +1,10 @@
 import {defineStore} from "pinia";
 
-export const AppSettingsStore = defineStore("AppSettings",{
+// Global app settings
+export const AppSettingsStore = defineStore("appSettingsStore",{
     state: () => ({
         userName: '',
         serverId: ''
     }),
-
-    actions: {
-
-    },
+    actions: {},
 })
