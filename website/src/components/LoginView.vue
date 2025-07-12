@@ -36,10 +36,10 @@
 <script setup>
 // imports
 import { ref, computed, watch } from 'vue'
-import axios from 'axios'
 import {AlertStore} from "../stores/alertStore.js";
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
 import router from "../routes/router.js";
+import * as AuthService from "../services/authorizationService.js"
 
 // emits
 const emit = defineEmits([''])
@@ -64,43 +64,14 @@ const blockConnection = computed(() =>
     appSettings.userName.toString().trim().length < 2 || appSettings.userName.toString().trim().length === 0
 )
 
-
-function handleAxiosErrors(error) {
-  if (error.response) {
-    if (error.response.status === 422) {
-      alertStore.open(error.response.data.error)
-      return
-    }
-    alertStore.open('Connection to server failed')
-  }
-}
-
-async function checkApiIsAlive() {
-  let ret
-  let url = `/api/isAlive`
-  try {
-    const response = await axios.get(url)
-    ret = response.status === 200
-  } catch (error) {
-    handleAxiosErrors(error)
-    ret = false
-  }
-  return ret
-}
-
 async function tryConnect() {
-  let url = `/api/chat/canConnect/${appSettings.serverId}?User=${appSettings.userName}`
-  if (!await checkApiIsAlive()) {
-    alertStore.open('Connection to server failed')
+  const [canConnect, errorMessage] = await AuthService.canConnect(appSettings.userName, appSettings.serverId)
+
+  if(!canConnect){
+    alertStore.open(errorMessage)
     return
   }
-  try {
-    const response = await axios.get(url)
-    if (response.status === 200) {
-      await appRouter.push("chat")
-    }
-  } catch (error) {
-    handleAxiosErrors(error)
-  }
+
+  await appRouter.push("chat")
 }
 </script> 
