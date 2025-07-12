@@ -9,21 +9,40 @@ Simple text chat on websockets in go anv vue
 
 </h3>
 
-
+## Required
+- npm (for backend)
+- Make (if you want to use build scripts)
 
 ##  Usage
 
-#### With Make file
+#### Build With Make
 
 ``` bash
-MAKE build
-./apiServer  
+# Full Build + Autostart
+Make start 
+
+## Full Build
+MAKE build 
+
+# Or if you want build only front/back
+MAKE backendBuild
+MAKE frontendBuild  # REQUIRED IF WANT HOST LIKE SPA
 ```
 #### Manual build
 
 ``` bash
+
+## Backend
 go mod tidy
 go build -v ./cmd/apiServer
-./apiServer
+
+## Frontend
+cd website && npm install && npm run build # REQUIRED IF WANT HOST LIKE SPA
 ```
 
+
+### Startup
+``` bash
+./apiServer # For back
+cd website && npm run dev # If you want only front
+```
