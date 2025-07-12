@@ -60,20 +60,26 @@
 </template>
 
 <script setup>
+// imports
 import { ref, computed, onMounted } from 'vue'
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
-const appSettings = AppSettingsStore()
+import router from "../routes/router.js";
 
+// emits
 const emit = defineEmits(['alert'])
 
-onMounted(() => {
-  connect()
-})
 
+// store + routers
+const appSettings = AppSettingsStore()
+const appRouter = router
+
+// ref, computed
 const chatSocket = ref(null)
 const users = ref([])
 const messages = ref([])
 const currentMessage = ref('')
+
+const blockSendMessage = computed(() => currentMessage.value.length === 0)
 
 const messageType = Object.freeze({
   message: 'Message',
@@ -81,8 +87,14 @@ const messageType = Object.freeze({
   UserNameChanged: 'UserNameChanged',
 })
 
-const blockSendMessage = computed(() => currentMessage.value.length === 0)
+// watch
 
+// live cycle
+onMounted(() => {
+  connect()
+})
+
+// Functions
 function sendMessage() {
   if (chatSocket.value) {
     chatSocket.value.send(currentMessage.value)
@@ -95,7 +107,7 @@ function disconnect() {
     chatSocket.value.close()
   }
   emit('alert', 'You have been disconnected')
-  appSettings.disconnectFromChat()
+  appRouter.push("login")
 }
 
 function connect() {

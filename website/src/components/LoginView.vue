@@ -34,23 +34,34 @@
 </template>
 
 <script setup>
+// imports
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
-
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
-const appSettings = AppSettingsStore()
+import router from "../routes/router.js";
 
+// emits
 const emit = defineEmits(['connect', 'alert'])
+
+// store + routers
+const appSettings = AppSettingsStore()
+const appRouter = router
+
+// ref, computed
 const formClass = ref('needs-validation')
 
+// watch
+watch([appSettings.userName, appSettings.serverId], () => {
+  formClass.value = 'was-validated'
+})
 
+// live cycle
+
+// functions
 const blockConnection = computed(() =>
     appSettings.userName.toString().trim().length < 2 || appSettings.userName.toString().trim().length === 0
 )
 
-watch([appSettings.userName, appSettings.serverId], () => {
-  formClass.value = 'was-validated'
-})
 
 function handleAxiosErrors(error) {
   if (error.response) {
@@ -83,7 +94,7 @@ async function tryConnect() {
   try {
     const response = await axios.get(url)
     if (response.status === 200) {
-      appSettings.connectToChat()
+      await appRouter.push("chat")
     }
   } catch (error) {
     handleAxiosErrors(error)
