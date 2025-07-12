@@ -100,7 +100,7 @@ watch(ChatService.Users, (val) => { console.log('Users changed:', val) })
 
 // live cycle
 onMounted(() => {
-  ChatService.Connect(appSettings.userName, appSettings.serverId)
+  ChatService.Connect(appSettings.serverId, appSettings.userName)
 
   // Subscribes
   ChatService.On("connect", onConnect)
