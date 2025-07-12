@@ -62,15 +62,16 @@
 <script setup>
 // imports
 import { ref, computed, onMounted } from 'vue'
+import {AlertStore} from "../stores/alertStore.js";
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
 import router from "../routes/router.js";
 
 // emits
-const emit = defineEmits(['alert'])
-
+const emit = defineEmits([''])
 
 // store + routers
 const appSettings = AppSettingsStore()
+const alertStore = AlertStore()
 const appRouter = router
 
 // ref, computed
@@ -106,15 +107,12 @@ function disconnect() {
   if (chatSocket.value) {
     chatSocket.value.close()
   }
-  emit('alert', 'You have been disconnected')
   appRouter.push("login")
 }
 
 function connect() {
   if (chatSocket.value)
       chatSocket.value.close()
-
-  console.log(appSettings.userName)
 
   let url = `/api/chat/${appSettings.serverId}?User=${appSettings.userName}`
 
@@ -127,6 +125,7 @@ function connect() {
 function socketOnOpen(evt) {}
 
 function socketOnClose(evt) {
+  alertStore.open('You have been disconnected')
   disconnect()
 }
 

@@ -37,14 +37,16 @@
 // imports
 import { ref, computed, watch } from 'vue'
 import axios from 'axios'
+import {AlertStore} from "../stores/alertStore.js";
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
 import router from "../routes/router.js";
 
 // emits
-const emit = defineEmits(['connect', 'alert'])
+const emit = defineEmits([''])
 
 // store + routers
 const appSettings = AppSettingsStore()
+const alertStore = AlertStore()
 const appRouter = router
 
 // ref, computed
@@ -66,9 +68,10 @@ const blockConnection = computed(() =>
 function handleAxiosErrors(error) {
   if (error.response) {
     if (error.response.status === 422) {
-      emit('alert', error.response.data.error)
+      alertStore.open(error.response.data.error)
+      return
     }
-    emit('alert', 'Connection to server failed')
+    alertStore.open('Connection to server failed')
   }
 }
 
@@ -88,7 +91,7 @@ async function checkApiIsAlive() {
 async function tryConnect() {
   let url = `/api/chat/canConnect/${appSettings.serverId}?User=${appSettings.userName}`
   if (!await checkApiIsAlive()) {
-    emit('alert', 'Connection to server failed')
+    alertStore.open('Connection to server failed')
     return
   }
   try {
