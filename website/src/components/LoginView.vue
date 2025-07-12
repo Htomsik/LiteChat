@@ -5,7 +5,7 @@
       <div class="colContainer">
         <div class="centerContainer marginAll">
           <div class="card text-center">
-            <h1 style="font-weight: bold;">ChatHub</h1>
+            <h1 style="font-weight: bold;">LiteChat</h1>
             <form id="ConnectInfo" :class="formClass" @submit.prevent>
               <div>
                 <div class="form-floating mb-3">

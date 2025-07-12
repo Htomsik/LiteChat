@@ -2,8 +2,10 @@
 .PHONY: backendBuild frontendBuild test
 .DEFAULT_GOAL := start
 
-start: frontendBuild backendBuild killBackend
+start: build killBackend
 	./apiServer.exe
+
+build: frontendBuild backendBuild
 
 backendBuild:
 	go mod tidy
@@ -12,12 +14,13 @@ backendBuild:
 killBackend:
 	-taskkill /IM apiServer.exe /F 2>NUL || exit 0
 
-backendBuildSwag:
+backendInitSwagger:
 	swag init -g ./cmd/apiServer/main.go
+
+backendTests:
+	go test -v -race -timeout 15s ./...
 
 frontendBuild:
 	cd website && npm install && npm run build
 
-test:
-	go test -v -race -timeout 15s ./...
 
