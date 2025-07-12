@@ -10,7 +10,7 @@
       </div>
 
       <div class="colContainer overflow-auto" style=" flex-grow: 1">
-        <div v-for="[role, users] in usersToRoleUsers(users)" :key="role">
+        <div v-for="[role, users] in usersToRoleUsers(ChatService.Users.value)" :key="role">
           <div class="userList-Role">
             {{ role }}
           </div>
@@ -26,7 +26,7 @@
       </div>
 
       <div class="rowContainer" style="flex-shrink: 0">
-        <button @click="disconnect" id="disconnectButton" style="width: 100%" class="btn btn-secondary" type="button">Disconnect</button>
+        <button @click="ChatService.Disconnect" id="disconnectButton" style="width: 100%" class="btn btn-secondary" type="button">Disconnect</button>
       </div>
 
     </div>
@@ -35,7 +35,7 @@
     <div style="flex-grow: 1" class="card chatContainer">
       <div style="display: flex; flex-direction: column; height: 100%">
         <div style="flex-grow: 1" class="overflow-auto">
-          <div v-for="item in messages" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === appSettings.userName }" class="test">
+          <div v-for="item in ChatService.Messages.value" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === appSettings.userName }" class="test">
             <div class="message bg-secondary">
               <span class="message-user">{{ item.user }}</span>
               <div class="message-text">
@@ -61,10 +61,11 @@
 
 <script setup>
 // imports
-import { ref, computed, onMounted } from 'vue'
+import {ref, computed, onMounted, watch} from 'vue'
 import {AlertStore} from "../stores/alertStore.js";
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
 import router from "../routes/router.js";
+import * as ChatService from "../services/chatService.js"
 
 // emits
 const emit = defineEmits([''])
@@ -75,9 +76,6 @@ const alertStore = AlertStore()
 const appRouter = router
 
 // ref, computed
-const chatSocket = ref(null)
-const users = ref([])
-const messages = ref([])
 const currentMessage = ref('')
 
 const blockSendMessage = computed(() => currentMessage.value.length === 0)
@@ -89,62 +87,23 @@ const messageType = Object.freeze({
 })
 
 // watch
+watch(ChatService.Messages, (val) => { console.log('Messages changed:', val) })
+watch(ChatService.Users, (val) => { console.log('Users changed:', val) })
 
 // live cycle
 onMounted(() => {
-  connect()
+  ChatService.Connect(appSettings.userName, appSettings.serverId)
+
+  // Subscribes
+  ChatService.On("connect", onConnect)
+  ChatService.On("disconnect", onDisconnect)
+  ChatService.On("userNameChanged", onUserNameChanged)
 })
 
 // Functions
 function sendMessage() {
-  if (chatSocket.value) {
-    chatSocket.value.send(currentMessage.value)
-    currentMessage.value = ''
-  }
-}
-
-function disconnect() {
-  if (chatSocket.value) {
-    chatSocket.value.close()
-  }
-  appRouter.push("login")
-}
-
-function connect() {
-  if (chatSocket.value)
-      chatSocket.value.close()
-
-  let url = `/api/chat/${appSettings.serverId}?User=${appSettings.userName}`
-
-  chatSocket.value = new WebSocket(url)
-  chatSocket.value.onopen = socketOnOpen
-  chatSocket.value.onclose = socketOnClose
-  chatSocket.value.onmessage = socketOnMessage
-}
-
-function socketOnOpen(evt) {}
-
-function socketOnClose(evt) {
-  alertStore.open('You have been disconnected')
-  disconnect()
-}
-
-function socketOnMessage(evt) {
-  let messageObj = JSON.parse(evt.data)
-  switch (messageObj.type) {
-    case messageType.message:
-      messages.value.push(messageObj)
-      break
-    case messageType.userList:
-      for (let user of messageObj.message) {
-        user.Color = getRandomHexColorByUserName(user.Name)
-      }
-      users.value = messageObj.message
-      break
-    case messageType.UserNameChanged:
-      appSettings.userName = messageObj.message
-      break
-  }
+  ChatService.sendMessage(currentMessage.value)
+  currentMessage.value = ''
 }
 
 function formatMessageDateTime(dateTimeString) {
@@ -167,19 +126,19 @@ function usersToRoleUsers(usersArr) {
   return Array.from(roleUsers.entries())
 }
 
-function getRandomHexColorByUserName(username) {
-  let hash = 0
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 10) - hash)
-  }
-  let hex = (hash & 0x00FFFFFF).toString(16).toUpperCase()
-  let r = parseInt(hex.substring(0, 2), 16)
-  let g = parseInt(hex.substring(2, 4), 16)
-  let b = parseInt(hex.substring(4, 6), 16)
-  let factor = 0.2
-  r = Math.round(r + (255 - r) * factor)
-  g = Math.round(g + (255 - g) * factor)
-  b = Math.round(b + (255 - b) * factor)
-  return `#${Math.round(r).toString(16)}${Math.round(g).toString(16)}${Math.round(b).toString(16)}`
+
+// Functions (Subscribes)
+function onConnect(){
+
 }
+
+function onDisconnect(){
+  alertStore.open('You have been disconnected')
+  appRouter.push("login")
+}
+
+function onUserNameChanged(){
+
+}
+
 </script> 
