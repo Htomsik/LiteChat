@@ -5,7 +5,7 @@
 
 <h3 align="center">
 
-Simple text chat on websockets in go anv vue
+Simple text chat on websockets on GO + Vue
 
 </h3>
 
