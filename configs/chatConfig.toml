@@ -1,5 +1,5 @@
 
 adminRole = { name = "Admin", isAdmin = true}
-defaultRole = {name = "User", iAdmin = false, permissions = [0]}
+defaultRole = {name = "User", isAdmin = false, permissions = [1]}
 
 roles = []

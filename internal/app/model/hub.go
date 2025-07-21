@@ -190,8 +190,17 @@ func (hub *Hub) Run() {
 
 			hub.userListChanged()
 
+		// TODO продумать систему разделения типов сообщений
 		// Retranslate to other clients
 		case message, _ := <-hub.Commands.Message:
+
+			needPermission := message.Type.RequiredPermission()
+			if !message.User.HavePermission(needPermission) {
+				hub.logger.Warnf("User %s no permission %v for message type %v",
+					message.User.Name, needPermission, message.Type)
+				continue
+			}
+
 			hub.sendMessageAll(message)
 		}
 	}

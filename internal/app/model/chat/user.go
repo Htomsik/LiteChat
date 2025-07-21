@@ -16,6 +16,25 @@ type User struct {
 	originalName string
 }
 
+// HavePermission check access to functional
+func (user *User) HavePermission(permission RolePermission) bool {
+	if permission == PermissionNone {
+		return true
+	}
+
+	if user.Role.IsAdmin {
+		return true
+	}
+
+	for _, perm := range user.Role.Permissions {
+		if perm == permission {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (user *User) MarshalJSON() ([]byte, error) {
 	return json.Marshal(dto.UserDTO{
 		Id:       user.Id,

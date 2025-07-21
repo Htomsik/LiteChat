@@ -13,6 +13,15 @@ const (
 	TypeUserNameChanged
 )
 
+func (msgType MessageType) RequiredPermission() RolePermission {
+	switch msgType {
+	case TypeMessage:
+		return PermissionSendMessage
+	default:
+		return PermissionNone
+	}
+}
+
 func (msgType MessageType) String() string {
 	return [...]string{"Message", "UsersList", "UserNameChanged"}[msgType]
 }
