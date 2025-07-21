@@ -54,7 +54,7 @@ func (client *Client) WriteToHub() {
 		}
 
 		stringMessage := string(message[:])
-		jsonMessage := chat.NewMessage(client.User.Name, stringMessage)
+		jsonMessage := chat.NewMessage(client.User, stringMessage)
 
 		client.commands.Message <- jsonMessage
 	}

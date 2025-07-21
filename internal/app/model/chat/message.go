@@ -1,6 +1,7 @@
 package chat
 
 import (
+	"Chat/internal/app/model/dto"
 	"encoding/json"
 	"github.com/google/uuid"
 	"time"
@@ -9,8 +10,8 @@ import (
 // Message letter from chat
 type Message struct {
 	Type         MessageType `json:"type"`
-	User         string      `json:"user"`
-	Message      any         `json:"message"`
+	User         *User       `json:"user"`
+	Message      any         `json:"message"` // TODO Переделать на интерфейс + Разные типы контента
 	DateTime     time.Time   `json:"dateTime"`
 	clearPrivacy bool
 }
@@ -53,7 +54,7 @@ func (msg *Message) ClearPrivacy(chatUser *User) bool {
 func NewSystemMessage(msgType MessageType, data any) Message {
 
 	message := Message{
-		User:     SystemUser,
+		User:     &User{Name: SystemUser},
 		Type:     msgType,
 		DateTime: time.Now(),
 		Message:  data,
@@ -73,13 +74,22 @@ func NewSystemMessage(msgType MessageType, data any) Message {
 	return message
 }
 
-func NewMessage(user string, message any) Message {
+func NewMessage(user *User, message any) Message {
 	return Message{
 		Type:     TypeMessage,
 		User:     user,
 		Message:  message,
 		DateTime: time.Now(),
 	}
+}
+
+func (msg *Message) MarshalJSON() ([]byte, error) {
+	return json.Marshal(dto.MessageDTO{
+		Type:     msg.Type.String(),
+		User:     msg.User.Name,
+		Message:  msg.Message,
+		DateTime: msg.DateTime,
+	})
 }
 
 // ToJson converting message to json
@@ -90,8 +100,6 @@ func (msg *Message) ToJson() string {
 
 // ToByteArray converting message to json and byte array
 func (msg *Message) ToByteArray() []byte {
-
 	byteMessage, _ := json.Marshal(msg)
-
 	return byteMessage
 }

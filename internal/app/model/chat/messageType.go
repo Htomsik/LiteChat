@@ -1,7 +1,5 @@
 package chat
 
-import "encoding/json"
-
 const (
 	SystemUser = "System"
 )
@@ -17,8 +15,4 @@ const (
 
 func (msgType MessageType) String() string {
 	return [...]string{"Message", "UsersList", "UserNameChanged"}[msgType]
-}
-
-func (msgType MessageType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(msgType.String())
 }

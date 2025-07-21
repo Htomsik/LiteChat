@@ -36,7 +36,7 @@ func (hub *Hub) SetAdmin(client *websocket.Client) {
 	}
 
 	// Set new admin
-	client.User.Role = hub.config.AdminRole.Name
+	client.User.Role = hub.config.AdminRole
 	hub.admin = client
 }
 
@@ -102,14 +102,12 @@ func (hub *Hub) sendMessageAll(message chat.Message) {
 	}
 
 	clients, err := hub.store.Client().All()
-
 	if err != nil {
 		hub.logger.Error(err)
 		return
 	}
 
 	for _, cl := range clients {
-
 		localMessage := message
 		if localMessage.ClearPrivacy(cl.User) {
 			cl.SendMessage <- localMessage
@@ -127,10 +125,11 @@ func (hub *Hub) clientConnected(client *websocket.Client) {
 		hub.SetAdmin(client)
 		return
 	} else {
-		client.User.Role = hub.config.DefaultRole.Name
+		client.User.Role = hub.config.DefaultRole
 	}
 
 	// Send him all messages
+	// TODO Переделать систему отправки сообщений на массивы
 	for _, message := range hub.messages {
 		client.SendMessage <- message
 	}
@@ -175,7 +174,7 @@ func (hub *Hub) Run() {
 			}
 
 			// Change admin on first connected if admin is disconnected
-			if client.User.Role == hub.config.AdminRole.Name && len(clients) >= 1 {
+			if client.User.Role.IsAdmin && len(clients) >= 1 {
 				newAdmin, err := hub.store.Client().FirstConnected(client.User.Id)
 				if err != nil {
 					hub.logger.Error(err)
