@@ -39,14 +39,14 @@
       <div style="display: flex; flex-direction: column; height: 100%">
         <div style="flex-grow: 1" class="overflow-auto">
 
-          <div v-for="item in ChatService.Messages.value" :key="item.dateTime + item.user" :class="{ messageBoxLeft: item.user === appSettings.userName }" class="test">
+          <div v-for="item in ChatService.Messages.value" :key="item.DateTime + item.User" :class="{ messageBoxLeft: isCurrentUserMessage(item)}">
 
             <div class="message">
-              <span class="message-user">{{ item.user }}</span>
+              <span class="message-user">{{ item.User }}</span>
               <div class="message-text">
-                {{ item.message }}
+                {{ item.MessageData }}
               </div>
-              <span class="message-dateTime">{{ formatMessageDateTime(item.dateTime) }}</span>
+              <span class="message-dateTime">{{ formatMessageDateTime(item.DateTime) }}</span>
             </div>
 
           </div>
@@ -74,6 +74,7 @@ import {AlertStore} from "../stores/alertStore.js";
 import {AppSettingsStore} from "../stores/appSettingsStore.js";
 import router from "../routes/router.js";
 import * as ChatService from "../services/chatService.js"
+import {PermissionType} from "../models/chatModels.js";
 
 // emits
 const emit = defineEmits([''])
@@ -86,12 +87,11 @@ const appRouter = router
 // ref, computed
 const currentMessage = ref('')
 
-const blockSendMessage = computed(() => currentMessage.value.length === 0)
+const blockSendMessage = computed(() => {
+  if (currentMessage.value.length === 0) return true
+  if (!ChatService.CurrentUser.value) return true
 
-const messageType = Object.freeze({
-  message: 'Message',
-  userList: 'UsersList',
-  UserNameChanged: 'UserNameChanged',
+  return !ChatService.CurrentUser.value.havePermission(PermissionType.sendMessage)
 })
 
 // watch
@@ -110,7 +110,7 @@ onMounted(() => {
 
 // Functions
 function sendMessage() {
-  ChatService.sendMessage(currentMessage.value)
+  ChatService.SendMessage(currentMessage.value)
   currentMessage.value = ''
 }
 
@@ -121,14 +121,29 @@ function formatMessageDateTime(dateTimeString) {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
 }
 
+/**
+ * @param {Message} message
+ * @returns {boolean}
+ */
+function isCurrentUserMessage(message) {
+  if (!ChatService.CurrentUser.value || !ChatService.CurrentUser.value.Name) {
+    return false
+  }
+  return message.User === ChatService.CurrentUser.value.Name
+}
+
+/**
+ * @param {User[]} usersArr
+ * @returns {[string, User[]][]}
+ */
 function usersToRoleUsers(usersArr) {
   let roleUsers = new Map()
   for (let i = 0; i < usersArr.length; i++) {
     let user = usersArr[i]
-    if (!roleUsers.has(user.Role)) {
-      roleUsers.set(user.Role, [])
+    if (!roleUsers.has(user.Role.Name)) {
+      roleUsers.set(user.Role.Name, [])
     }
-    let usersPerRole = roleUsers.get(user.Role)
+    let usersPerRole = roleUsers.get(user.Role.Name)
     usersPerRole.push(user)
   }
   return Array.from(roleUsers.entries())

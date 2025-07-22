@@ -1,15 +1,18 @@
 import { ref } from 'vue'
+import {Message, MessageType, User} from "../models/chatModels.js";
 
+/** @type {Vue.ref<User>} */
+export const CurrentUser = ref(null)
+
+/** @type {Vue.ref<User[]>} */
 export const Users = ref([])
+
+/** @type {Vue.ref<Message[]>} */
 export const Messages = ref([])
 
 let socket = null
 
-const messageType = Object.freeze({
-    message: 'Message',
-    userList: 'UsersList',
-    userNameChanged: 'UserNameChanged',
-})
+
 
 const listeners = {
     connect: [],
@@ -45,7 +48,7 @@ export function Connect(serverId, userName){
         emit('disconnect', evt)
     }
 
-    socket.onmessage = OnMessage
+    socket.onmessage = onMessage
 }
 
 export function Disconnect(){
@@ -54,40 +57,80 @@ export function Disconnect(){
         socket = null
     }
 
+    CurrentUser.value = null
     Users.value = []
     Messages.value = []
 }
 
-export function sendMessage(message) {
+/**
+ * @param {Message} message
+ */
+export function SendMessage(message) {
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(message)
     }
 }
 
-function OnMessage(evt) {
-    let messageObj = JSON.parse(evt.data)
-    switch (messageObj.type) {
-
-        case messageType.message:
-            Messages.value.push(messageObj)
+function onMessage(evt) {
+    const message = new Message(JSON.parse(evt.data))
+    switch (message.Type) {
+        case MessageType.message:
+            Messages.value.push(message)
             break
 
-        case messageType.userList:
-            for (let user of messageObj.message) {
-                user.Color = getRandomHexColorByUserName(user.Name)
-            }
-            Users.value = [...messageObj.message]
+        case MessageType.userList:
+            onMessageUserList(message.MessageData)
             break
 
-        case messageType.userNameChanged:
-            emit('userNameChanged', messageObj.message)
+        case MessageType.userNameChanged:
+            emit('userNameChanged', message.MessageData)
             break
+
         default:
-            console.warn('Unknown message type:', messageObj.type, messageObj)
+            console.warn('Unknown message type:', message.Type, message)
             break
     }
 }
 
+/**
+ * @param {User[]} usersData
+ */
+function onMessageUserList(usersData){
+    if (!Array.isArray(usersData)) {
+        console.error('Users data is not an array:', usersData)
+        return
+    }
+
+    // Создаем экземпляры User класса
+    const users = usersData.map(userData => {
+        const user = new User(userData)
+        user.Color = getRandomHexColorByUserName(user.Name)
+        return user
+    })
+    Users.value = [...users]
+
+    // TODO Add UserChanged event on api later. Its time
+    // Change only if user doesn't exist
+    if(CurrentUser.value && CurrentUser.value.id !== '')
+    {
+        CurrentUser.value = users.find(user => user.Id === CurrentUser.value.id)
+        return
+    }
+
+    // For Admin
+    if(users.length === 1)
+    {
+        CurrentUser.value = users[0]
+        return
+    }
+
+    CurrentUser.value = users.find(user => user.Id && user.Id !== '')
+}
+
+/**
+ * @param {string} username
+ * @return {string} hexCode
+ */
 function getRandomHexColorByUserName(username) {
     let hash = 0
     for (let i = 0; i < username.length; i++) {

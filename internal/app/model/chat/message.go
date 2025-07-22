@@ -99,7 +99,10 @@ func (msg *Message) ToJson() string {
 }
 
 // ToByteArray converting message to json and byte array
-func (msg *Message) ToByteArray() []byte {
-	byteMessage, _ := json.Marshal(msg)
-	return byteMessage
+func (msg *Message) ToByteArray() ([]byte, error) {
+	byteMessage, err := json.Marshal(msg)
+	if err != nil {
+		return nil, err
+	}
+	return byteMessage, nil
 }

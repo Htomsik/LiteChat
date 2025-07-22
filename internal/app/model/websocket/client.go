@@ -89,7 +89,11 @@ func (client *Client) ReadFromHub() {
 				client.commands.logger.Infof("Error when get next writer %v", err)
 				return
 			} else {
-				writer.Write(chatMessage.ToByteArray())
+				chatMessageArray, err := chatMessage.ToByteArray()
+				if err != nil {
+					client.commands.logger.Infof("Error when serialize message: %v", err)
+				}
+				_, _ = writer.Write(chatMessageArray)
 			}
 
 			if err := writer.Close(); err != nil {

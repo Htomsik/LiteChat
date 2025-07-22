@@ -3,6 +3,8 @@ package chat
 import (
 	"Chat/internal/app/model/dto"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"time"
 )
@@ -36,10 +38,24 @@ func (user *User) HavePermission(permission RolePermission) bool {
 }
 
 func (user *User) MarshalJSON() ([]byte, error) {
+
+	if !user.Role.IsAdmin && (user.Role == nil || user.Role.Permissions == nil) {
+		return nil, errors.New(fmt.Sprintf("user %v permission cannot be nil", user.Name))
+	}
+
+	permissions := make([]string, len(user.Role.Permissions))
+	for i, perm := range user.Role.Permissions {
+		permissions[i] = perm.String()
+	}
+
 	return json.Marshal(dto.UserDTO{
-		Id:       user.Id,
-		Name:     user.Name,
-		Role:     user.Role.Name,
+		Id:   user.Id,
+		Name: user.Name,
+		Role: dto.UserRoleDTO{
+			Name:        user.Role.Name,
+			IsAdmin:     user.Role.IsAdmin,
+			Permissions: permissions,
+		},
 		DateTime: user.DateTime,
 	})
 }
