@@ -155,7 +155,7 @@ function usersToRoleUsers(usersArr) {
 
 // Functions (Subscribes)
 function onConnect(){
-
+  alertStore.close()
 }
 
 function onDisconnect(){
