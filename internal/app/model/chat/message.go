@@ -3,6 +3,7 @@ package chat
 import (
 	"Chat/internal/app/model/dto"
 	"encoding/json"
+	"fmt"
 	"github.com/google/uuid"
 	"time"
 )
@@ -24,7 +25,6 @@ func (msg *Message) ClearPrivacy(chatUser *User) bool {
 	}
 
 	switch msg.Type {
-
 	case TypeUsersList:
 
 		// Clear userData
@@ -42,6 +42,8 @@ func (msg *Message) ClearPrivacy(chatUser *User) bool {
 			}
 		}
 		msg.Message = clearUsers
+
+		fmt.Println(clearUsers)
 
 	default:
 		return false

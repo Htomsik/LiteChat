@@ -48,8 +48,13 @@ func (user *User) MarshalJSON() ([]byte, error) {
 		permissions[i] = perm.String()
 	}
 
+	id := ""
+	if user.Id != uuid.Nil {
+		id = fmt.Sprintf("%v", user.Id)
+	}
+
 	return json.Marshal(dto.UserDTO{
-		Id:   user.Id,
+		Id:   id,
 		Name: user.Name,
 		Role: dto.UserRoleDTO{
 			Name:        user.Role.Name,
