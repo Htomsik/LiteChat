@@ -43,8 +43,9 @@
   --bs-warning-text-emphasis: #ff9800;
   --bs-warning-bg-subtle: rgba(255, 152, 0, 0.15);
   --bs-warning-border-subtle: rgba(255, 152, 0, 0.3);
-  
+
   --bs-danger: #cf6679;
+  --bs-danger-secondary-color: rgba(207, 102, 121, 0.8);
   --bs-danger-rgb: 207, 102, 121;
   --bs-danger-text-emphasis: #cf6679;
   --bs-danger-bg-subtle: rgba(207, 102, 121, 0.15);
@@ -232,10 +233,6 @@
 }
 
 [data-bs-theme="material-dark"] .userList-Role {
-  color: var(--bs-primary);
-}
-
-[data-bs-theme="material-dark"] .userList-userAvatar {
   background-color: var(--md-elevation-4);
   border-color: var(--bs-border-color);
 }
@@ -329,35 +326,43 @@ body,html{
     height: 90%;
     padding: 10px;
 }
-
-.userList-usersContainer{
-    margin-left: 10px;
-}
-
-.userList-user{
+.userList-usersContainer {
     display: flex;
+    flex-direction: row;
     align-items: center;
-    word-wrap:break-word;
-    font-size: 16px;
-    font-weight: bold;
+    gap: 4px;
 }
 
-.userList-Role{
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.userList-userAvatar{
-    min-height: 30px;
-    min-width: 30px;
-    max-width: 30px;
-    max-height: 30px;
-    margin-right: 5px;
-    border-radius: 50%;
-    border: 1px solid #6c757d;
+.userList-itemContainer{
+    height: 28px;
+    line-height: 1;
 
     font-size: 18px;
     font-weight: bold;
+
+    display: flex;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+}
+
+.userList-permission{
+    color: var(--bs-tertiary-color)
+}
+
+.userList-permissionDenied{
+    color: var(--bs-danger-secondary-color)
+}
+
+.userList-Role {
+    width: 28px;
+    border-radius: 50%;
+    border: 1px solid #6c757d;
+    box-sizing: border-box;
+}
+
+.userList-user{
+    text-transform: capitalize;
 }
 
 /*General*/

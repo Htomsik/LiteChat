@@ -12,8 +12,6 @@ export const Messages = ref([])
 
 let socket = null
 
-
-
 const listeners = {
     connect: [],
     disconnect: [],
@@ -104,7 +102,7 @@ function onMessageUserList(usersData){
     // Создаем экземпляры User класса
     const users = usersData.map(userData => {
         const user = new User(userData)
-        user.Color = getRandomHexColorByUserName(user.Name)
+        user.Color = getHexColorByUserRole(user.Role)
         return user
     })
     Users.value = [...users]
@@ -128,21 +126,9 @@ function onMessageUserList(usersData){
 }
 
 /**
- * @param {string} username
+ * @param {UserRole} role
  * @return {string} hexCode
  */
-function getRandomHexColorByUserName(username) {
-    let hash = 0
-    for (let i = 0; i < username.length; i++) {
-        hash = username.charCodeAt(i) + ((hash << 10) - hash)
-    }
-    let hex = (hash & 0x00FFFFFF).toString(16).toUpperCase()
-    let r = parseInt(hex.substring(0, 2), 16)
-    let g = parseInt(hex.substring(2, 4), 16)
-    let b = parseInt(hex.substring(4, 6), 16)
-    let factor = 0.2
-    r = Math.round(r + (255 - r) * factor)
-    g = Math.round(g + (255 - g) * factor)
-    b = Math.round(b + (255 - b) * factor)
-    return `#${Math.round(r).toString(16)}${Math.round(g).toString(16)}${Math.round(b).toString(16)}`
+function getHexColorByUserRole(role) {
+    return role.IsAdmin ? "#cf6679" : "#4caf50"
 }

@@ -11,16 +11,20 @@
 
       <div class="colContainer overflow-auto" style=" flex-grow: 1">
         <div v-for="[role, users] in usersToRoleUsers(ChatService.Users.value)" :key="role">
-          <div class="userList-Role">
-            {{ role }}
-          </div>
 
-          <div class="rowContainer userList-usersContainer" v-for="user in users" :key="user.Id">
-            <div class="userList-userAvatar centerContainer" :style="{'background': user.Color}">
-              {{ user.Name[0] }}
+          <div class="userList-usersContainer" v-for="user in users" :key="user.Id">
+
+            <div class="userList-itemContainer" >
+              <i class="bi bi-chat-fill userList-permission"
+                 :class="user.havePermission(PermissionType.sendMessage) ? 'userList-permission' : 'userList-permissionDenied'"/>
             </div>
-            <div class="userList-user">
-              {{ user.Name }}
+
+            <div class="userList-itemContainer userList-Role" :style="{'background': user.Color}">
+              {{ user.Role.Name[0] }}
+            </div>
+
+            <div class="userList-itemContainer userList-user">
+              {{ user.Name}}
             </div>
 
           </div>
@@ -90,7 +94,6 @@ const currentMessage = ref('')
 const blockSendMessage = computed(() => {
   if (currentMessage.value.length === 0) return true
   if (!ChatService.CurrentUser.value) return true
-
   return !ChatService.CurrentUser.value.havePermission(PermissionType.sendMessage)
 })
 
